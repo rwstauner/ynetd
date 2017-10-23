@@ -1,0 +1,35 @@
+# ynetd
+
+A tiny super server written in go.
+
+    # ynetd "listen" "proxy to" command to run
+    ynetd "0.0.0.0:8080" "localhost:8081" service-name arg arg...
+
+- Listen on the specified address for connections.
+- When one is received, launch the specified program (with arguments).
+- Wait for the specified port to become ready.
+- Forward this connection (and all future traffic) to the new service.
+
+If you have a service that might not be used
+you can make it available while only consuming a tiny amount of RAM
+when it isn't needed.
+
+The impetus for this was a docker-compose project with a handful
+of micro services.  Each service consumes several hundred megabytes
+of RAM, while some of them might never be used during any given
+`docker-compose up` session.
+
+Rather than fiddling with which services to launch or exclude and how to make
+them available when needed, just put `ynetd` in front of them.
+RAM usage for each container is now only 500K but the services will vivify
+automatically if a request to them is made.
+
+## Why?
+
+- To reduce memory consumption for services until they are needed.
+- To learn a little go.
+
+## Why the stupid name?
+
+I wanted something like `xinted` but something that would launch
+another (long running) server and just forward connections.
