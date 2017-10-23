@@ -52,19 +52,33 @@ func launchOnce(cmd []string) {
 
 func setupSignals(cmd *exec.Cmd) {
 	channel := make(chan os.Signal, 1)
-	signal.Notify(channel, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGUSR1, syscall.SIGUSR2)
+	signal.Notify(channel,
+		syscall.SIGCHLD,
+		syscall.SIGHUP,
+		syscall.SIGINT,
+		syscall.SIGTERM,
+		syscall.SIGUSR1,
+		syscall.SIGUSR2,
+	)
 
 	for sig := range channel {
-		cmd.Process.Signal(sig)
-		// TODO: Allow configuration for which signals to exit with.
-		err := cmd.Wait()
-		status := 0
-		if err != nil {
-			if frdErr, ok := err.(*exec.ExitError); ok {
-				status = frdErr.ProcessState.Sys().(syscall.WaitStatus).ExitStatus()
+		switch sig {
+		case syscall.SIGCHLD:
+			cmd.Wait()
+			// Next client can attempt to restart the command.
+			process = nil
+		default:
+			cmd.Process.Signal(sig)
+			// TODO: Allow configuration for which signals to exit with.
+			err := cmd.Wait()
+			status := 0
+			if err != nil {
+				if frdErr, ok := err.(*exec.ExitError); ok {
+					status = frdErr.ProcessState.Sys().(syscall.WaitStatus).ExitStatus()
+				}
 			}
+			os.Exit(status)
 		}
-		os.Exit(status)
 	}
 }
 
