@@ -1,7 +1,6 @@
 package main
 
 // TODO: move to pkg in case we wanted multiple
-// TODO: listen for signal, pass to child, wait, exit
 // TODO: kill process after timeout without usage
 
 import (
@@ -11,6 +10,8 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -34,7 +35,27 @@ func launch(args []string) *exec.Cmd {
 		log.Fatal(err)
 	}
 
+	go setupSignals(cmd)
+
 	return cmd
+}
+
+func setupSignals(cmd *exec.Cmd) {
+	channel := make(chan os.Signal, 1)
+	signal.Notify(channel, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGUSR1, syscall.SIGUSR2)
+
+	for sig := range channel {
+		cmd.Process.Signal(sig)
+		// TODO: Allow configuration for which signals to exit with.
+		err := cmd.Wait()
+		status := 0
+		if err != nil {
+			if frdErr, ok := err.(*exec.ExitError); ok {
+				status = frdErr.ProcessState.Sys().(syscall.WaitStatus).ExitStatus()
+			}
+		}
+		os.Exit(status)
+	}
 }
 
 func forward(src *net.TCPConn, dst *net.TCPConn) {
