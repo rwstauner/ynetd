@@ -122,9 +122,28 @@ func listen(src string, dst string, cmd []string) {
 	}
 }
 
+var listenAddress string
+var proxyAddress string
+
+func init() {
+	const (
+		listenUsage = "Address to listen on"
+		proxyUsage  = "Address to proxy to (the address the command should be listening on)"
+	)
+	flag.StringVar(&listenAddress, "listen", "", listenUsage)
+	flag.StringVar(&listenAddress, "l", "", listenUsage+" (shorthand)")
+	flag.StringVar(&proxyAddress, "proxy", "", proxyUsage)
+	flag.StringVar(&proxyAddress, "p", "", proxyUsage+" (shorthand)")
+}
+
 func main() {
 	flag.Parse()
-	args := flag.Args()
-	src, dst, cmd := args[0], args[1], args[2:]
-	listen(src, dst, cmd)
+	cmd := flag.Args()
+	if listenAddress == "" {
+		log.Fatal("listenAddress is required")
+	}
+	if proxyAddress == "" {
+		log.Fatal("proxyAddress is required")
+	}
+	listen(listenAddress, proxyAddress, cmd)
 }
