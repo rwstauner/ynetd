@@ -11,11 +11,10 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 )
-
-var process = (*exec.Cmd)(nil)
 
 func flog(spec string, args ...interface{}) {
 	log.Printf("ynetd: "+spec, args...)
@@ -37,6 +36,18 @@ func launch(args []string) *exec.Cmd {
 	go setupSignals(cmd)
 
 	return cmd
+}
+
+var process *exec.Cmd
+var launchMux = sync.Mutex{}
+
+func launchOnce(cmd []string) {
+	launchMux.Lock()
+	if process == nil {
+		process = launch(cmd)
+		time.Sleep(250 * time.Millisecond)
+	}
+	launchMux.Unlock()
 }
 
 func setupSignals(cmd *exec.Cmd) {
@@ -84,10 +95,7 @@ func dialWithRetries(network string, address string, timeout time.Duration) (net
 }
 
 func handleConnection(src *net.TCPConn, dst string, cmd []string, timeout time.Duration) {
-	if process == nil {
-		process = launch(cmd)
-		time.Sleep(250 * time.Millisecond)
-	}
+	launchOnce(cmd)
 
 	conn, err := dialWithRetries("tcp", dst, timeout)
 	if err != nil {
