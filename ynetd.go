@@ -15,7 +15,6 @@ import (
 	"time"
 )
 
-var retries = 60 * 5 * 4 // 60s * 5min * 4 = every 250ms
 var process = (*exec.Cmd)(nil)
 
 func flog(spec string, args ...interface{}) {
