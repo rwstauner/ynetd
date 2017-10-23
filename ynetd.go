@@ -64,25 +64,33 @@ func forward(src *net.TCPConn, dst *net.TCPConn) {
 	io.Copy(dst, src)
 }
 
-func dialWithRetries(network string, address string, retries int) (net.Conn, error) {
-	conn, err := (net.Conn)(nil), (error)(nil)
-	for i := 0; i < retries; i++ {
-		conn, err = net.Dial(network, address)
-		if err == nil {
-			break
+func dialWithRetries(network string, address string, timeout time.Duration) (net.Conn, error) {
+	timer := time.After(timeout)
+	dialer := net.Dialer{Timeout: timeout}
+	var err error
+	for {
+		select {
+		case <-timer:
+			flog("timed out after %s", timeout)
+			return nil, err
+		default:
+			if conn, e := dialer.Dial(network, address); e == nil {
+				return conn, e
+			} else {
+				err = e
+			}
+			time.Sleep(250 * time.Millisecond)
 		}
-		time.Sleep(250 * time.Millisecond)
 	}
-	return conn, err
 }
 
-func handleConnection(src *net.TCPConn, dst string, cmd []string) {
+func handleConnection(src *net.TCPConn, dst string, cmd []string, timeout time.Duration) {
 	if process == nil {
 		process = launch(cmd)
 		time.Sleep(250 * time.Millisecond)
 	}
 
-	conn, err := dialWithRetries("tcp", dst, retries)
+	conn, err := dialWithRetries("tcp", dst, timeout)
 	if err != nil {
 		src.Close()
 		flog("connect to %s failed: %s", dst, err.Error())
@@ -97,7 +105,7 @@ func handleConnection(src *net.TCPConn, dst string, cmd []string) {
 	forward(fwd, src)
 }
 
-func listen(src string, dst string, cmd []string) {
+func listen(src string, dst string, cmd []string, timeout time.Duration) {
 	ln, err := net.Listen("tcp", src)
 	if err != nil {
 		flog("listen error: %s", err.Error())
@@ -118,22 +126,29 @@ func listen(src string, dst string, cmd []string) {
 			}
 			continue
 		}
-		go handleConnection(conn.(*net.TCPConn), dst, cmd)
+		go handleConnection(conn.(*net.TCPConn), dst, cmd, timeout)
 	}
 }
 
 var listenAddress string
 var proxyAddress string
+var timeout = 5 * time.Minute
 
 func init() {
 	const (
-		listenUsage = "Address to listen on"
-		proxyUsage  = "Address to proxy to (the address the command should be listening on)"
+		listenUsage  = "Address to listen on"
+		proxyUsage   = "Address to proxy to (the address the command should be listening on)"
+		timeoutUsage = "Seconds to allow command to start up"
 	)
+
 	flag.StringVar(&listenAddress, "listen", "", listenUsage)
 	flag.StringVar(&listenAddress, "l", "", listenUsage+" (shorthand)")
+
 	flag.StringVar(&proxyAddress, "proxy", "", proxyUsage)
 	flag.StringVar(&proxyAddress, "p", "", proxyUsage+" (shorthand)")
+
+	flag.DurationVar(&timeout, "timeout", timeout, timeoutUsage)
+	flag.DurationVar(&timeout, "t", timeout, timeoutUsage+" (shorthand)")
 }
 
 func main() {
@@ -145,5 +160,5 @@ func main() {
 	if proxyAddress == "" {
 		log.Fatal("proxyAddress is required")
 	}
-	listen(listenAddress, proxyAddress, cmd)
+	listen(listenAddress, proxyAddress, cmd, timeout)
 }
