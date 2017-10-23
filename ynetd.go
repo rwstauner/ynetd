@@ -3,13 +3,13 @@ package main
 // TODO: move to pkg in case we wanted multiple
 // TODO: listen for signal, pass to child, wait, exit
 // TODO: kill process after timeout without usage
-// TODO: stream process output
 
 import (
 	"flag"
 	"io"
 	"log"
 	"net"
+	"os"
 	"os/exec"
 	"time"
 )
@@ -18,13 +18,16 @@ var retries = 60 * 5 * 4 // 60s * 5min * 4 = every 250ms
 var process = (*exec.Cmd)(nil)
 
 func flog(spec string, args ...interface{}) {
-	log.Printf(spec, args...)
+	log.Printf("ynetd: "+spec, args...)
 }
 
 func launch(args []string) *exec.Cmd {
 	cmd := exec.Command(args[0], args[1:]...)
 
 	flog("Starting: %s", args)
+
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 
 	err := cmd.Start()
 	if err != nil {
