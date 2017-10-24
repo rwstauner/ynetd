@@ -154,6 +154,7 @@ func listen(src string, dst string, cmd []string, timeout time.Duration) {
 var listenAddress string
 var proxyAddress string
 var timeout = 5 * time.Minute
+var printVersion = false
 
 func init() {
 	const (
@@ -170,11 +171,17 @@ func init() {
 
 	flag.DurationVar(&timeout, "timeout", timeout, timeoutUsage)
 	flag.DurationVar(&timeout, "t", timeout, timeoutUsage+" (shorthand)")
+
+	flag.BoolVar(&printVersion, "version", printVersion, "Print version")
 }
 
 func main() {
 	flag.Parse()
 	cmd := flag.Args()
+	if printVersion {
+		println("ynetd", Version)
+		os.Exit(0)
+	}
 	if listenAddress == "" {
 		log.Fatal("listenAddress is required")
 	}
