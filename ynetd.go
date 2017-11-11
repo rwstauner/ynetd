@@ -2,6 +2,7 @@ package main
 
 // TODO: move to pkg in case we wanted multiple
 // TODO: kill process after timeout without usage
+// TODO: json config file
 
 import (
 	"flag"
@@ -110,6 +111,7 @@ func dialWithRetries(network string, address string, timeout time.Duration) (net
 }
 
 func handleConnection(src *net.TCPConn, dst string, cmd []string, timeout time.Duration) {
+	// TODO: make cmd optional
 	launchOnce(cmd)
 
 	conn, err := dialWithRetries("tcp", dst, timeout)
@@ -152,6 +154,7 @@ func listen(src string, dst string, cmd []string, timeout time.Duration) {
 	}
 }
 
+// TODO: make listen/proxy arrays
 var listenAddress string
 var proxyAddress string
 var timeout = 5 * time.Minute
@@ -189,5 +192,6 @@ func main() {
 	if proxyAddress == "" {
 		log.Fatal("proxyAddress is required")
 	}
+	// TODO: listen for signals here?
 	listen(listenAddress, proxyAddress, cmd, timeout)
 }
