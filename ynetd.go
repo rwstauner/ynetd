@@ -5,6 +5,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"io"
 	"log"
 	"net"
@@ -179,7 +180,7 @@ func main() {
 	flag.Parse()
 	cmd := flag.Args()
 	if printVersion {
-		println("ynetd", Version)
+		fmt.Println("ynetd", Version)
 		os.Exit(0)
 	}
 	if listenAddress == "" {
