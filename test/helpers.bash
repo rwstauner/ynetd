@@ -61,5 +61,7 @@ close () {
 
 teardown () {
   close
-  [[ -n "$YLOG" ]] && rm -f "$YLOG"
+  if [[ -n "$YLOG" ]]; then
+    rm -f "$YLOG"
+  fi
 }
