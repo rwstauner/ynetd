@@ -4,8 +4,15 @@ PROXY_PORT=$((64000 + (RANDOM % 1000)))
 YTAG=
 YPID=
 
+logdir=tmp
+mkdir -p "$logdir"
+
 debug () {
   echo " # $*" >&3
+}
+
+knock () {
+  nc -z localhost "$LISTEN_PORT"
 }
 
 running () {
@@ -13,11 +20,15 @@ running () {
   (ps -o args | grep -E "^$1$YTAG")
 }
 
+ylog () {
+  cat $YLOG
+}
 
 ynetd () {
   YTAG=":$((RANDOM))"
+  YLOG="$logdir/test$YTAG.log"
   # Use exec to separate from bats and set $0.
-  (YTAG="$YTAG" exec -a "ynetd$YTAG" "${YNETD:-ynetd}" "$@") &
+  (YTAG="$YTAG" exec -a "ynetd$YTAG" "${YNETD:-ynetd}" "$@" &> "$YLOG") &
   YPID=$!
   sleep 1
 }
@@ -50,4 +61,5 @@ close () {
 
 teardown () {
   close
+  [[ -n "$YLOG" ]] && rm -f "$YLOG"
 }
