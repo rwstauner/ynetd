@@ -15,9 +15,17 @@ knock () {
   nc -z localhost "$LISTEN_PORT"
 }
 
+no_zombies () {
+  ! (ps -o state,args | grep -E '^Z|defunct')
+}
+
 running () {
   # Use subshell to help command terminate.
   (ps -o args | grep -E "^$1$YTAG")
+}
+
+signal () {
+  kill `ps -o pid,args | awk -v CMD="$1$YTAG" '$2 ~ CMD { print $1 }'`
 }
 
 ylog () {
