@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/rwstauner/ynetd.svg?branch=master)](https://travis-ci.org/rwstauner/ynetd)
+
 # ynetd
 
 A tiny super server written in go.
