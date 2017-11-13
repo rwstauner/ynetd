@@ -18,6 +18,9 @@ import (
 	"time"
 )
 
+// Filled in during build process.
+var Version string
+
 func flog(spec string, args ...interface{}) {
 	log.Printf("ynetd: "+spec, args...)
 }
