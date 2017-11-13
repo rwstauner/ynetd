@@ -3,7 +3,7 @@
 load helpers
 
 @test "command restarts after exiting" {
-  ynetbash 'listen <<<foo; sleep 2'
+  ynetbash 'serve foo; sleep 2'
   running ynetd
   ! running ynetbash
   knock
@@ -16,7 +16,7 @@ load helpers
 }
 
 @test "command restarts when killed" {
-  ynetbash 'while true; do listen <<<"reap$YTAG"; done'
+  ynetbash 'while true; do serve "reap$YTAG"; done'
   running ynetd
   ! running ynetbash
 

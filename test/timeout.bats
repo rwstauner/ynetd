@@ -3,7 +3,7 @@
 load helpers
 
 @test "works before timeout" {
-  ynetbash -t 6s 'sleep 4; echo "timely$YTAG" | listen'
+  ynetbash -t 6s 'sleep 4; serve "timely$YTAG"'
 
   start=`date +%s`
   # This will wait.
@@ -27,7 +27,7 @@ load helpers
 }
 
 @test "times out, works later" {
-  ynetbash -t 3s 'sleep 5; echo "timely$YTAG" | listen'
+  ynetbash -t 3s 'sleep 5; serve "timely$YTAG"'
   knock
 
   # Command is running.
