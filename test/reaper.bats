@@ -5,29 +5,29 @@ load helpers
 @test "command restarts after exiting" {
   ynetbash 'serve foo; sleep 2'
   running ynetd
-  ! running ynetbash
+  ! running ytester
   knock
-  running ynetbash
+  running ytester
   sleep 2
-  ! running ynetbash
+  ! running ytester
   no_zombies
   knock
-  running ynetbash
+  running ytester
 }
 
 @test "command restarts when killed" {
   ynetbash 'while true; do serve "reap$YTAG"; done'
   running ynetd
-  ! running ynetbash
+  ! running ytester
 
   ysend hello | grep -qFx "reap$YTAG"
-  running ynetbash
-  signal ynetbash
+  running ytester
+  signal ytester
 
   # killed.
-  ! running ynetbash
+  ! running ytester
   no_zombies
 
   ysend hello | grep -qFx "reap$YTAG"
-  running ynetbash
+  running ytester
 }

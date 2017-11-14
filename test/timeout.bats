@@ -20,7 +20,7 @@ load helpers
   knock
 
   sleep 1
-  running ynetbash
+  running ytester
 
   # One for each attempt.
   [ 3 -eq `ylog | grep 'ynetd: timed out after 10ms' | wc -l` ]
@@ -31,7 +31,7 @@ load helpers
   knock
 
   # Command is running.
-  running ynetbash
+  running ytester
 
   # Wait for first sleep.
   sleep 4

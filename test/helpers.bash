@@ -51,7 +51,7 @@ ynetbash () {
 
   PROXY_PORT=$PROXY_PORT \
   ynetd -listen "localhost:$LISTEN_PORT" -proxy "localhost:$PROXY_PORT" "${args[@]}" \
-    bash -c 'exec -a ynetbash$YTAG bash -c "$*"' -- \
+    bash -c 'exec -a ytester$YTAG bash -c "$*"' -- \
       'cleanup () { killall nc; exit; }; trap cleanup INT TERM;' \
       'serve () { (nc -l -p "$PROXY_PORT" localhost <<<"$*") & wait; };' \
       "$1"

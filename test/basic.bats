@@ -5,10 +5,10 @@ load helpers
 @test "command starts when port is used" {
   ynetbash 'while true; do serve "wave$YTAG"; done'
   running ynetd
-  ! running ynetbash
+  ! running ytester
   ysend hello | grep -qFx "wave$YTAG"
-  running ynetbash
+  running ytester
   close
   ! running ynetd
-  ! running ynetbash
+  ! running ytester
 }
