@@ -23,4 +23,5 @@ test:
 _test:
 	go test
 	go build $(BUILD_ARGS) -o build/ynetd
-	YNETD=build/ynetd bats $(TESTS)
+	go build -o build/ytester test/ytester.go
+	YNETD=build/ynetd YTESTER=build/ytester bats $(TESTS)

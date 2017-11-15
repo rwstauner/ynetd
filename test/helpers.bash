@@ -12,11 +12,12 @@ debug () {
 }
 
 knock () {
-  nc -z localhost "$LISTEN_PORT"
+  ${YTESTER:-build/ytester} -knock -port "$LISTEN_PORT"
 }
 
 no_zombies () {
-  ! (ps -o state,args | grep -E '^Z|defunct')
+  # Ignore "bash" as some bats helpers can be temporarily zombied.
+  ! (ps -o state,args | grep -v bash | grep -E '^Z|defunct')
 }
 
 running () {
@@ -33,32 +34,20 @@ ylog () {
 }
 
 ynetd () {
-  YTAG=":$((RANDOM))"
   YLOG="$logdir/test$YTAG.log"
   # Use exec to separate from bats and set $0.
   (YTAG="$YTAG" exec -a "ynetd$YTAG" "${YNETD:-ynetd}" "$@" &> "$YLOG") &
   YPID=$!
-  sleep 1
 }
 
-ynetbash () {
-  # Last arg is script.
-  args=()
-  while [[ $# -gt 1 ]]; do
-    args+=("$1")
-    shift
-  done
-
-  PROXY_PORT=$PROXY_PORT \
-  ynetd -listen "localhost:$LISTEN_PORT" -proxy "localhost:$PROXY_PORT" "${args[@]}" \
-    bash -c 'exec -a ytester$YTAG bash -c "$*"' -- \
-      'clean () { [[ -n "$nc" ]] && kill -9 $nc; kill -$$; exit; }; trap clean INT TERM;' \
-      'serve () { (exec nc -l -p "$PROXY_PORT" localhost <<<"$*") & nc=$!; wait; };' \
-      "$1"
+ytester () {
+  ynetd -listen "localhost:$LISTEN_PORT" -proxy "localhost:$PROXY_PORT" "${YARGS[@]}" \
+    bash -c 'exec -a ytester$YTAG "$@"' -- \
+      "${YTESTER:-build/ytester}" -port "$PROXY_PORT" "$@"
 }
 
 ysend () {
-  echo "$*" | nc localhost $LISTEN_PORT
+  ${YTESTER:-build/ytester} -send "$*" -port "$LISTEN_PORT"
 }
 
 close () {
@@ -70,9 +59,16 @@ close () {
   YPID=
 }
 
+setup () {
+  YTAG=":$((RANDOM))"
+  YARGS=()
+}
+
 teardown () {
   close
   if [[ -n "$YLOG" ]]; then
+    # Dump to STDERR so that if the test fails we see the output.
+    ylog >&2
     rm -f "$YLOG"
   fi
 }

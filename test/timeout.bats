@@ -3,18 +3,20 @@
 load helpers
 
 @test "works before timeout" {
-  ynetbash -t 6s 'sleep 4; serve "timely$YTAG"'
+  YARGS=(-t 6s)
+  ytester -before 4s -serve "timely$YTAG"
 
   start=`date +%s`
   # This will wait.
-  ysend | grep -qFx "timely$YTAG"
+  ysend "hello" | grep -qFx "timely$YTAG"
   end=`date +%s`
 
   [ $end -ge $((start + 4)) ]
 }
 
 @test "times out" {
-  ynetbash -t 10ms 'sleep 10'
+  YARGS=(-t 10ms)
+  ytester -before 10s
   knock
   knock
   knock
@@ -27,7 +29,8 @@ load helpers
 }
 
 @test "times out, works later" {
-  ynetbash -t 3s 'sleep 5; serve "timely$YTAG"'
+  YARGS=(-t 3s)
+  ytester -before 5s -serve "timely$YTAG"
   knock
 
   # Command is running.
