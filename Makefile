@@ -14,9 +14,14 @@ DOCKER_VARS  = -e TESTS="$(TESTS)"
 DOCKER_RUN   = docker run --rm -v $(PWD):$(SRC_VOL) -w $(SRC_VOL) $(DOCKER_VARS) $(DOCKER_IMAGE)
 DOCKER_MAKE  = $(DOCKER_RUN) make
 
+.PHONY: all build test
+all: build
 
-.PHONY: all test
-all: test
+build:
+	$(DOCKER_MAKE) _build
+_build: _test
+	gox $(BUILD_ARGS) -output "build/ynetd-{{.OS}}-{{.Arch}}/ynetd" -verbose
+	(cd build && for i in ynetd-*/; do (cd $$i && zip "../$${i%/}.zip" ynetd*); done)
 
 test:
 	$(DOCKER_MAKE) _test
