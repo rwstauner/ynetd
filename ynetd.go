@@ -37,8 +37,7 @@ func launch(args []string) *exec.Cmd {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	go setupSignals(cmd)
+	flog("child started: %d", cmd.Process.Pid)
 
 	return cmd
 }
@@ -55,33 +54,45 @@ func launchOnce(cmd []string) {
 	launchMux.Unlock()
 }
 
-func setupSignals(cmd *exec.Cmd) {
+var sigChld os.Signal
+
+func setupSignals() {
 	channel := make(chan os.Signal, 1)
-	signal.Notify(channel,
-		syscall.SIGCHLD,
-		syscall.SIGHUP,
-		syscall.SIGINT,
-		syscall.SIGTERM,
-		syscall.SIGUSR1,
-		syscall.SIGUSR2,
-	)
+
+	// All signals.
+	signal.Notify(channel)
 
 	for sig := range channel {
 		switch sig {
-		case syscall.SIGCHLD:
-			cmd.Wait()
+		case sigChld:
+			if process == nil {
+				continue
+			}
+
+			process.Wait()
 			// Next client can attempt to restart the command.
+			// FIXME: reap all child processes and judge by pid when to restart.
 			process = nil
+			flog("child reaped")
 		default:
-			cmd.Process.Signal(sig)
+			if process == nil {
+				os.Exit(0)
+			}
+
+			flog("sending %s to %d\n", sig, process.Process.Pid)
+			if err := process.Process.Signal(sig); err != nil {
+				flog("error: %s\n", err)
+			}
 			// TODO: Allow configuration for which signals to exit with.
-			err := cmd.Wait()
+			err := process.Wait()
 			status := 0
 			if err != nil {
 				if frdErr, ok := err.(*exec.ExitError); ok {
+					flog("process state: %s\n", frdErr.ProcessState)
 					status = frdErr.ProcessState.Sys().(syscall.WaitStatus).ExitStatus()
 				}
 			}
+			flog("waited (%d): %s\n", status, err)
 			os.Exit(status)
 		}
 	}
@@ -195,6 +206,9 @@ func main() {
 	if proxyAddress == "" {
 		log.Fatal("proxyAddress is required")
 	}
-	// TODO: listen for signals here?
-	listen(listenAddress, proxyAddress, cmd, timeout)
+
+	go listen(listenAddress, proxyAddress, cmd, timeout)
+
+	// block
+	setupSignals()
 }
