@@ -21,8 +21,10 @@ import (
 // Filled in during build process.
 var Version string
 
+var logger = log.New(os.Stdout, "ynetd ", log.Ldate|log.Ltime|log.Lmicroseconds)
+
 func flog(spec string, args ...interface{}) {
-	log.Printf("ynetd: "+spec, args...)
+	logger.Printf(spec, args...)
 }
 
 func launch(args []string) *exec.Cmd {
@@ -79,20 +81,20 @@ func setupSignals() {
 				os.Exit(0)
 			}
 
-			flog("sending %s to %d\n", sig, process.Process.Pid)
+			flog("sending %s to %d", sig, process.Process.Pid)
 			if err := process.Process.Signal(sig); err != nil {
-				flog("error: %s\n", err)
+				flog("error: %s", err)
 			}
 			// TODO: Allow configuration for which signals to exit with.
 			err := process.Wait()
 			status := 0
 			if err != nil {
 				if frdErr, ok := err.(*exec.ExitError); ok {
-					flog("process state: %s\n", frdErr.ProcessState)
+					flog("process state: %s", frdErr.ProcessState)
 					status = frdErr.ProcessState.Sys().(syscall.WaitStatus).ExitStatus()
 				}
 			}
-			flog("waited (%d): %s\n", status, err)
+			flog("waited (%d): %s", status, err)
 			os.Exit(status)
 		}
 	}

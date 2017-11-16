@@ -25,7 +25,8 @@ load helpers
   running ytester
 
   # One for each attempt.
-  [ 3 -eq `ylog | grep 'ynetd: timed out after 10ms' | wc -l` ]
+
+  ylog -y | grep 'timed out after 10ms' | lines 3
 }
 
 @test "times out, works later" {
@@ -39,7 +40,7 @@ load helpers
   # Wait for first sleep.
   sleep 4
 
-  ylog | grep 'ynetd: timed out after 3s'
+  ylog -y | grep 'timed out after 3s'
 
   # Wait for listen to start.
   sleep 2

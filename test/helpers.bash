@@ -11,8 +11,17 @@ debug () {
   echo " # $*" >&3
 }
 
+is () {
+  echo "[ $* ]" >&2 # for debugging
+  [ "$@" ]
+}
+
 knock () {
   ${YTESTER:-build/ytester} -knock -port "$LISTEN_PORT"
+}
+
+lines () {
+  is "$1" -eq "$(cat | wc -l)"
 }
 
 no_zombies () {
@@ -30,7 +39,11 @@ signal () {
 }
 
 ylog () {
-  cat $YLOG
+  cmd=(cat)
+  if [[ $1 == "-y" ]]; then
+    cmd=(grep -E ^ynetd)
+  fi
+  "${cmd[@]}" $YLOG
 }
 
 ynetd () {

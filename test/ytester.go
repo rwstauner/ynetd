@@ -2,8 +2,8 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"io"
+	"log"
 	"net"
 	"os"
 	"time"
@@ -17,6 +17,7 @@ var (
 	port   = ""
 	send   = ""
 	serve  = ""
+	logger = log.New(os.Stderr, "ytester ", log.Ldate|log.Ltime|log.Lmicroseconds)
 )
 
 func init() {
@@ -29,8 +30,8 @@ func init() {
 	flag.StringVar(&serve, "serve", serve, "serve")
 }
 
-func flog(args ...interface{}) {
-	fmt.Fprintln(os.Stderr, args...)
+func flog(spec string, args ...interface{}) {
+	logger.Printf(spec, args...)
 }
 
 func listen(addr string) {
@@ -40,7 +41,7 @@ func listen(addr string) {
 	for {
 		conn, _ := ln.Accept()
 
-		flog("serving:", serve)
+		flog("serving: %s", serve)
 		conn.Write([]byte(serve + "\n"))
 		conn.Close()
 
@@ -52,7 +53,7 @@ func listen(addr string) {
 }
 
 func main() {
-	flog("ytester:", os.Args[:])
+	flog("args: %s", os.Args[:])
 	flag.Parse()
 
 	time.Sleep(before)
