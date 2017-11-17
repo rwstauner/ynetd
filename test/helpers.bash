@@ -11,6 +11,11 @@ debug () {
   echo " # $*" >&3
 }
 
+dgrep () {
+  lines=`cat`
+  echo "$lines" | grep "$@" || { echo "$lines" >&2; false; }
+}
+
 is () {
   echo "[ $* ]" >&2 # for debugging
   [ "$@" ]
@@ -26,12 +31,12 @@ lines () {
 
 no_zombies () {
   # Ignore "bash" as some bats helpers can be temporarily zombied.
-  ! (ps -o state,args | grep -v bash | grep -E '^Z|defunct')
+  ! (ps -o state,args | grep -vE 'bash|grep' | grep -E '^Z|defunct')
 }
 
 running () {
   # Use subshell to help command terminate.
-  (ps -o args | grep -E "^$1$YTAG")
+  (ps -o args | dgrep -E "^$1$YTAG")
 }
 
 signal () {
@@ -51,6 +56,11 @@ ynetd () {
   # Use exec to separate from bats and set $0.
   (YTAG="$YTAG" exec -a "ynetd$YTAG" "${YNETD:-ynetd}" "$@" &> "$YLOG") &
   YPID=$!
+  # Wait for it to start.
+  for i in 1 2 3 4; {
+    if [[ -s "$YLOG" ]]; then break; fi
+    sleep 0.25 || :
+  }
 }
 
 ytester () {
@@ -66,7 +76,7 @@ ysend () {
 close () {
   if [[ -n "$YPID" ]]; then
     # Don't count these exit statuses as errors.
-    kill $YPID || :
+    kill -s INT $YPID || :
     wait $YPID || :
   fi
   YPID=

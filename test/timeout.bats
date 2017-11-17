@@ -11,7 +11,7 @@ load helpers
   ysend "hello" | grep -qFx "timely$YTAG"
   end=`date +%s`
 
-  [ $end -ge $((start + 4)) ]
+  is $end -ge $((start + 4))
 }
 
 @test "times out" {
