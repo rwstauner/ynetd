@@ -18,7 +18,7 @@ import (
 	"time"
 )
 
-// Filled in during build process.
+// Version is the program version, filled in from git during build process.
 var Version string
 
 var logger = log.New(os.Stdout, "ynetd ", log.Ldate|log.Ltime|log.Lmicroseconds)
@@ -109,20 +109,17 @@ func forward(src *net.TCPConn, dst *net.TCPConn) {
 	io.Copy(dst, src)
 }
 
-func dialWithRetries(network string, address string, timeout time.Duration) (net.Conn, error) {
+func dialWithRetries(network string, address string, timeout time.Duration) (conn net.Conn, err error) {
 	timer := time.After(timeout)
 	dialer := net.Dialer{Timeout: timeout}
-	var err error
 	for {
 		select {
 		case <-timer:
 			flog("timed out after %s", timeout)
-			return nil, err
+			return
 		default:
-			if conn, e := dialer.Dial(network, address); e == nil {
-				return conn, e
-			} else {
-				err = e
+			if conn, err = dialer.Dial(network, address); err == nil {
+				return
 			}
 			time.Sleep(250 * time.Millisecond)
 		}
