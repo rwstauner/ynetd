@@ -39,8 +39,8 @@ running () {
   (ps -o args | dgrep -E "^$1$YTAG")
 }
 
-signal () {
-  kill `ps -o pid,args | awk -v CMD="$1$YTAG" '$2 ~ CMD { print $1 }'`
+ypidof () {
+  ps -o pid,args | awk -v CMD="$1$YTAG" '$2 ~ CMD { print $1 }'
 }
 
 ylog () {

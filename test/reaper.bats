@@ -22,7 +22,7 @@ load helpers
 
   ysend hello | grep -qFx "reap$YTAG"
   running ytester
-  signal ytester
+  kill `ypidof ytester`
 
   # killed.
   ! running ytester
