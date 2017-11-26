@@ -196,21 +196,28 @@ func init() {
 }
 
 func main() {
+	os.Exit(frd())
+}
+
+func frd() int {
 	flag.Parse()
 	cmd := flag.Args()
 	if printVersion {
 		fmt.Println("ynetd", Version)
-		os.Exit(0)
+		return 0
 	}
 	if listenAddress == "" {
-		log.Fatal("listenAddress is required")
+		fmt.Println("listenAddress is required")
+		return 1
 	}
 	if proxyAddress == "" {
-		log.Fatal("proxyAddress is required")
+		fmt.Println("proxyAddress is required")
+		return 1
 	}
 
 	go listen(listenAddress, proxyAddress, cmd, timeout)
 
 	// block
 	setupSignals()
+	return 0
 }
