@@ -62,7 +62,10 @@ func setupSignals() {
 	channel := make(chan os.Signal, 1)
 
 	// All signals.
-	signal.Notify(channel)
+	signal.Notify(channel, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM)
+	if sigChld != nil {
+		signal.Notify(channel, sigChld)
+	}
 
 	for sig := range channel {
 		switch sig {

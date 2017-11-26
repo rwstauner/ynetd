@@ -1,6 +1,8 @@
 # v0.3 (Unreleased)
 
 - Make output simpler and more consistent.
+- Limit signal handling to HUP, INT, TERM so that the default
+  behavior is used for any other signals (STOP, CONT, etc).
 
 # v0.2 (2017-11-15)
 
