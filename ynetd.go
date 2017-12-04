@@ -23,14 +23,10 @@ var Version string
 
 var logger = log.New(os.Stdout, "ynetd ", log.Ldate|log.Ltime|log.Lmicroseconds)
 
-func flog(spec string, args ...interface{}) {
-	logger.Printf(spec, args...)
-}
-
 func launch(args []string) *exec.Cmd {
 	cmd := exec.Command(args[0], args[1:]...)
 
-	flog("Starting: %s", args)
+	logger.Printf("starting: %s", args)
 
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -39,7 +35,7 @@ func launch(args []string) *exec.Cmd {
 	if err != nil {
 		log.Fatal(err)
 	}
-	flog("child started: %d", cmd.Process.Pid)
+	logger.Printf("child started: %d", cmd.Process.Pid)
 
 	return cmd
 }
@@ -78,26 +74,26 @@ func setupSignals() {
 			// Next client can attempt to restart the command.
 			// FIXME: reap all child processes and judge by pid when to restart.
 			process = nil
-			flog("child reaped")
+			logger.Printf("child reaped")
 		default:
 			if process == nil {
 				os.Exit(0)
 			}
 
-			flog("sending %s to %d", sig, process.Process.Pid)
+			logger.Printf("sending %s to %d", sig, process.Process.Pid)
 			if err := process.Process.Signal(sig); err != nil {
-				flog("error: %s", err)
+				logger.Printf("error: %s", err)
 			}
 			// TODO: Allow configuration for which signals to exit with.
 			err := process.Wait()
 			status := 0
 			if err != nil {
 				if frdErr, ok := err.(*exec.ExitError); ok {
-					flog("process state: %s", frdErr.ProcessState)
+					logger.Printf("process state: %s", frdErr.ProcessState)
 					status = frdErr.ProcessState.Sys().(syscall.WaitStatus).ExitStatus()
 				}
 			}
-			flog("waited (%d): %s", status, err)
+			logger.Printf("waited (%d): %s", status, err)
 			os.Exit(status)
 		}
 	}
@@ -115,7 +111,7 @@ func dialWithRetries(network string, address string, timeout time.Duration) (con
 	for {
 		select {
 		case <-timer:
-			flog("timed out after %s", timeout)
+			logger.Printf("timed out after %s", timeout)
 			return
 		default:
 			if conn, err = dialer.Dial(network, address); err == nil {
@@ -133,7 +129,7 @@ func handleConnection(src *net.TCPConn, dst string, cmd []string, timeout time.D
 	conn, err := dialWithRetries("tcp", dst, timeout)
 	if err != nil {
 		src.Close()
-		flog("connect to %s failed: %s", dst, err.Error())
+		logger.Printf("connect to %s failed: %s", dst, err.Error())
 		return
 	}
 
@@ -148,17 +144,17 @@ func handleConnection(src *net.TCPConn, dst string, cmd []string, timeout time.D
 func listen(src string, dst string, cmd []string, timeout time.Duration) {
 	ln, err := net.Listen("tcp", src)
 	if err != nil {
-		flog("listen error: %s", err.Error())
+		logger.Printf("listen error: %s", err.Error())
 		return
 	}
 	defer ln.Close()
 
-	flog("listen %s proxy %s cmd: %s", src, dst, cmd)
+	logger.Printf("listen %s proxy %s cmd: %s", src, dst, cmd)
 
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
-			flog("accept error: %s", err.Error())
+			logger.Printf("accept error: %s", err.Error())
 			if opErr, ok := err.(*net.OpError); ok {
 				if !opErr.Temporary() {
 					break

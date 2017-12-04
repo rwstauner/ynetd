@@ -15,5 +15,5 @@ load helpers
   running ytester
 
   close
-  ylog -y | grep Starting: | lines 1
+  ylog -y | grep starting: | lines 1
 }
