@@ -20,14 +20,34 @@ load helpers
   running ynetd
   ! running ytester
 
-  ysend hello | grep -qFx "reap$YTAG"
-  running ytester
-  kill `ypidof ytester`
+  # kill and restart multiple times.
+  for i in 1 2 3; {
+    ysend hello | grep -qFx "reap$YTAG"
+    running ytester
+    kill `ypidof ytester`
 
-  # killed.
+    # killed.
+    ! running ytester
+    no_zombies
+  }
+}
+
+@test "ynetd remains responsive after SIGCHLD" {
+  if ! kill -l | grep -q CHLD; then
+    skip "SIGCHLD not supported on this platform"
+  fi
+
+  ytester -loop -serve "reap$YTAG"
+  running ynetd
   ! running ytester
-  no_zombies
 
   ysend hello | grep -qFx "reap$YTAG"
   running ytester
+  kill -s CHLD $YPID
+
+  # The signal was fake, the process should still be running.
+  running ytester
+  # kill it, try again
+
+  ysend hello | grep -qFx "reap$YTAG"
 }

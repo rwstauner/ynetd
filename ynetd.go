@@ -11,11 +11,11 @@ import (
 	"log"
 	"net"
 	"os"
-	"os/exec"
 	"os/signal"
-	"sync"
 	"syscall"
 	"time"
+
+	"github.com/rwstauner/ynetd/procman"
 )
 
 // Version is the program version, filled in from git during build process.
@@ -23,80 +23,12 @@ var Version string
 
 var logger = log.New(os.Stdout, "ynetd ", log.Ldate|log.Ltime|log.Lmicroseconds)
 
-func launch(args []string) *exec.Cmd {
-	cmd := exec.Command(args[0], args[1:]...)
-
-	logger.Printf("starting: %s", args)
-
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	err := cmd.Start()
-	if err != nil {
-		log.Fatal(err)
-	}
-	logger.Printf("child started: %d", cmd.Process.Pid)
-
-	return cmd
-}
-
-var process *exec.Cmd
-var launchMux = sync.Mutex{}
-
-func launchOnce(cmd []string) {
-	launchMux.Lock()
-	if process == nil {
-		process = launch(cmd)
-		time.Sleep(250 * time.Millisecond)
-	}
-	launchMux.Unlock()
-}
-
-var sigChld os.Signal
-
-func setupSignals() {
+func setupSignals(pm *procman.ProcessManager) {
 	channel := make(chan os.Signal, 1)
 
-	// All signals.
 	signal.Notify(channel, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM)
-	if sigChld != nil {
-		signal.Notify(channel, sigChld)
-	}
 
-	for sig := range channel {
-		switch sig {
-		case sigChld:
-			if process == nil {
-				continue
-			}
-
-			process.Wait()
-			// Next client can attempt to restart the command.
-			// FIXME: reap all child processes and judge by pid when to restart.
-			process = nil
-			logger.Printf("child reaped")
-		default:
-			if process == nil {
-				os.Exit(0)
-			}
-
-			logger.Printf("sending %s to %d", sig, process.Process.Pid)
-			if err := process.Process.Signal(sig); err != nil {
-				logger.Printf("error: %s", err)
-			}
-			// TODO: Allow configuration for which signals to exit with.
-			err := process.Wait()
-			status := 0
-			if err != nil {
-				if frdErr, ok := err.(*exec.ExitError); ok {
-					logger.Printf("process state: %s", frdErr.ProcessState)
-					status = frdErr.ProcessState.Sys().(syscall.WaitStatus).ExitStatus()
-				}
-			}
-			logger.Printf("waited (%d): %s", status, err)
-			os.Exit(status)
-		}
-	}
+	pm.Signal(<-channel)
 }
 
 func forward(src *net.TCPConn, dst *net.TCPConn) {
@@ -122,9 +54,9 @@ func dialWithRetries(network string, address string, timeout time.Duration) (con
 	}
 }
 
-func handleConnection(src *net.TCPConn, dst string, cmd []string, timeout time.Duration) {
+func handleConnection(src *net.TCPConn, dst string, cmd *procman.Process, timeout time.Duration) {
 	// TODO: make cmd optional
-	launchOnce(cmd)
+	cmd.LaunchOnce()
 
 	conn, err := dialWithRetries("tcp", dst, timeout)
 	if err != nil {
@@ -141,7 +73,7 @@ func handleConnection(src *net.TCPConn, dst string, cmd []string, timeout time.D
 	forward(fwd, src)
 }
 
-func listen(src string, dst string, cmd []string, timeout time.Duration) {
+func listen(src string, dst string, cmd *procman.Process, timeout time.Duration) {
 	ln, err := net.Listen("tcp", src)
 	if err != nil {
 		logger.Printf("listen error: %s", err.Error())
@@ -189,6 +121,8 @@ func init() {
 	flag.DurationVar(&timeout, "t", timeout, timeoutUsage+" (shorthand)")
 
 	flag.BoolVar(&printVersion, "version", printVersion, "Print version")
+
+	procman.SetLogger(logger)
 }
 
 func main() {
@@ -211,9 +145,14 @@ func frd() int {
 		return 1
 	}
 
-	go listen(listenAddress, proxyAddress, cmd, timeout)
+	pm := procman.New()
+
+	go listen(listenAddress, proxyAddress, pm.Process(cmd), timeout)
+
+	go setupSignals(pm)
 
 	// block
-	setupSignals()
+	pm.Manage()
+
 	return 0
 }
