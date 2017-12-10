@@ -4,7 +4,7 @@
 
 A tiny super server written in go.
 
-    ynetd -l "0.0.0.0:8080" -s "localhost:8081" cmd arg...
+    ynetd -listen ":8080" -proxy "localhost:8081" cmd arg...
 
 - Listen on the specified address for connections.
 - When one is received, launch the specified program (with arguments).
@@ -30,7 +30,7 @@ automatically if a request to them is made.
 - To reduce memory consumption for services until they are needed.
 - To learn a little go.
 
-## Why the stupid name?
+## Why the name?
 
 I wanted something like `xinted` but something that would launch
 another (long running) server and just forward connections.
