@@ -10,14 +10,15 @@ import (
 )
 
 var (
-	after  = 0 * time.Millisecond
-	before = 0 * time.Millisecond
-	knock  = false
-	loop   = true
-	port   = ""
-	send   = ""
-	serve  = ""
-	logger = log.New(os.Stderr, "ytester ", log.Ldate|log.Ltime|log.Lmicroseconds)
+	after   = 0 * time.Millisecond
+	before  = 0 * time.Millisecond
+	knock   = false
+	loop    = true
+	port    = ""
+	send    = ""
+	serve   = ""
+	timeout = 2 * time.Second
+	logger  = log.New(os.Stderr, "ytester ", log.Ldate|log.Ltime|log.Lmicroseconds)
 )
 
 func init() {
@@ -28,6 +29,7 @@ func init() {
 	flag.StringVar(&port, "port", port, "port")
 	flag.StringVar(&send, "send", send, "send")
 	flag.StringVar(&serve, "serve", serve, "serve")
+	flag.DurationVar(&timeout, "timeout", timeout, "timeout")
 }
 
 func flog(spec string, args ...interface{}) {
@@ -76,7 +78,6 @@ func frd() int {
 		flog("knocking %d", port)
 		net.Dial("tcp", "localhost:"+port)
 	case send != "":
-		timeout := 10 * time.Second
 		c := make(chan net.Conn)
 		go func() {
 			for {

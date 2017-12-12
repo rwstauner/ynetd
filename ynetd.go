@@ -55,8 +55,9 @@ func dialWithRetries(network string, address string, timeout time.Duration) (con
 }
 
 func handleConnection(src *net.TCPConn, dst string, cmd *procman.Process, timeout time.Duration) {
-	// TODO: make cmd optional
-	cmd.LaunchOnce()
+	if cmd != nil {
+		cmd.LaunchOnce()
+	}
 
 	conn, err := dialWithRetries("tcp", dst, timeout)
 	if err != nil {

@@ -70,7 +70,13 @@ ytester () {
 }
 
 ysend () {
-  ${YTESTER:-build/ytester} -send "$*" -port "$LISTEN_PORT"
+  args=()
+  while [[ $# -gt 1 ]]; do
+    args+=("$1")
+    shift
+  done
+
+  ${YTESTER:-build/ytester} -port "$LISTEN_PORT" "${args[@]}" -send "$1"
 }
 
 close () {

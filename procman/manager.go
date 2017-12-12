@@ -27,6 +27,9 @@ func New() *ProcessManager {
 // Process returns the address to a new Process
 // wrapping the command with the ProcessManager embedded.
 func (m *ProcessManager) Process(argv []string) *Process {
+	if len(argv) == 0 {
+		return nil
+	}
 	return &Process{
 		argv:    argv,
 		manager: m,

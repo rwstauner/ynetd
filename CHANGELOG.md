@@ -1,4 +1,8 @@
-# v0.3 (Unreleased)
+# v0.4 (Unreleased)
+
+- Make command optional (just a port forwarder).
+
+# v0.3 (2017-12-09)
 
 - Make output simpler and more consistent.
 - Limit signal handling to HUP, INT, TERM so that the default
