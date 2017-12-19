@@ -10,8 +10,8 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
+	"github.com/rwstauner/ynetd/config"
 	"github.com/rwstauner/ynetd/procman"
 	"github.com/rwstauner/ynetd/service"
 )
@@ -29,32 +29,12 @@ func setupSignals(pm *procman.ProcessManager) {
 	pm.Signal(<-channel)
 }
 
-// TODO: make listen/proxy arrays
-var listenAddress string
-var proxyAddress string
-var timeout = 5 * time.Minute
 var printVersion = false
 
 func init() {
-	const (
-		listenUsage  = "Address to listen on"
-		proxyUsage   = "Address to proxy to (the address the command should be listening on)"
-		timeoutUsage = "Seconds to allow command to start up"
-	)
-
-	flag.StringVar(&listenAddress, "listen", "", listenUsage)
-	flag.StringVar(&listenAddress, "l", "", listenUsage+" (shorthand)")
-
-	flag.StringVar(&proxyAddress, "proxy", "", proxyUsage)
-	flag.StringVar(&proxyAddress, "p", "", proxyUsage+" (shorthand)")
-
-	flag.DurationVar(&timeout, "timeout", timeout, timeoutUsage)
-	flag.DurationVar(&timeout, "t", timeout, timeoutUsage+" (shorthand)")
-
 	flag.BoolVar(&printVersion, "version", printVersion, "Print version")
-
-	service.SetLogger(logger)
 	procman.SetLogger(logger)
+	service.SetLogger(logger)
 }
 
 func main() {
@@ -63,31 +43,32 @@ func main() {
 
 func frd() int {
 	flag.Parse()
-	cmd := flag.Args()
 	if printVersion {
 		fmt.Println("ynetd", Version)
 		return 0
 	}
-	if listenAddress == "" {
-		fmt.Println("listenAddress is required")
-		return 1
-	}
-	if proxyAddress == "" {
-		fmt.Println("proxyAddress is required")
+
+	cfg, err := config.Load(flag.Args())
+	if err != nil {
+		fmt.Println(err)
 		return 1
 	}
 
 	pm := procman.New()
-
-	svc := service.Service{
-		Proxy: map[string]string{
-			listenAddress: proxyAddress,
-		},
-		Command: pm.Process(cmd),
-		Timeout: timeout,
+	services, err := config.MakeServices(cfg, pm)
+	if err != nil {
+		fmt.Println(err)
+		return 1
 	}
 
-	go svc.Listen()
+	if len(services) == 0 {
+		fmt.Println("no services configured!")
+		return 1
+	}
+
+	for _, svc := range services {
+		go svc.Listen()
+	}
 
 	go setupSignals(pm)
 

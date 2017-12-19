@@ -14,6 +14,8 @@ DOCKER_VARS  = -e TESTS="$(TESTS)"
 DOCKER_RUN   = docker run --rm -v $(PWD)/tmp/gosrc:/go/src -v $(PWD):$(SRC_VOL) -w $(SRC_VOL) $(DOCKER_VARS) $(DOCKER_IMAGE)
 DOCKER_MAKE  = $(DOCKER_RUN) make
 
+GO_TEST_ARGS = `find -name '*_test.go' -a -not -path './tmp/*' | sed -r 's,[^/]+$$,,' | sort | uniq`
+
 .PHONY: all build test
 all: build
 
@@ -23,9 +25,12 @@ _build: _test
 	gox $(BUILD_ARGS) -output "build/ynetd-{{.OS}}-{{.Arch}}/ynetd" -verbose
 	(cd build && for i in ynetd-*/; do (cd $$i && zip "../$${i%/}.zip" ynetd*); done)
 
+gotest:
+	go test $(GO_TEST_ARGS)
+
 _test_build:
 	go get
-	go test
+	go test $(GO_TEST_ARGS)
 	go build $(BUILD_ARGS) -o build/ynetd
 	go build -o build/ytester test/ytester.go
 
