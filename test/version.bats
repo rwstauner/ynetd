@@ -3,7 +3,7 @@
 load helpers
 
 yversion () {
-  $YNETD --version
+  "$YNETD" --version
 }
 
 @test "displays version" {

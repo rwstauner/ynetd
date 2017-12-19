@@ -4,6 +4,9 @@ PROXY_PORT=$((64000 + (RANDOM % 1000)))
 YTAG=
 YPID=
 
+YNETD="${YNETD:-build/ynetd}"
+YTESTER="${YTESTER:-build/ytester}"
+
 logdir=tmp
 mkdir -p "$logdir"
 
@@ -22,7 +25,7 @@ is () {
 }
 
 knock () {
-  ${YTESTER:-build/ytester} -knock -port "$LISTEN_PORT"
+  "$YTESTER" -knock -port "$LISTEN_PORT"
 }
 
 lines () {
@@ -54,7 +57,7 @@ ylog () {
 ynetd () {
   YLOG="$logdir/test$YTAG.log"
   # Use exec to separate from bats and set $0.
-  (YTAG="$YTAG" exec -a "ynetd$YTAG" "${YNETD:-ynetd}" "$@" &> "$YLOG") &
+  (YTAG="$YTAG" exec -a "ynetd$YTAG" "$YNETD" "$@" &> "$YLOG") &
   YPID=$!
   # Wait for it to start.
   for i in 1 2 3 4; {
@@ -66,7 +69,7 @@ ynetd () {
 ytester () {
   ynetd -listen "localhost:$LISTEN_PORT" -proxy "localhost:$PROXY_PORT" "${YARGS[@]}" \
     bash -c 'exec -a ytester$YTAG "$@"' -- \
-      "${YTESTER:-build/ytester}" -port "$PROXY_PORT" "$@"
+      "$YTESTER" -port "$PROXY_PORT" "$@"
 }
 
 ysend () {
@@ -76,7 +79,7 @@ ysend () {
     shift
   done
 
-  ${YTESTER:-build/ytester} -port "$LISTEN_PORT" "${args[@]}" -send "$1"
+  "$YTESTER" -port "$LISTEN_PORT" "${args[@]}" -send "$1"
 }
 
 close () {

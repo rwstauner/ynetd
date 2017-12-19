@@ -3,7 +3,7 @@
 load helpers
 
 @test "command is not required" {
-  "${YTESTER:-build/ytester}" -port "$PROXY_PORT" -serve "nocmd$YTAG" &
+  "$YTESTER" -port "$PROXY_PORT" -serve "nocmd$YTAG" &
   tester="$!"
 
   # Nothing on listen port.
