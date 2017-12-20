@@ -6,6 +6,7 @@ YPID=
 
 YNETD="${YNETD:-build/ynetd}"
 YTESTER="${YTESTER:-build/ytester}"
+YAS="${BASH_SOURCE[0]%/*}/as"
 
 logdir=tmp
 mkdir -p "$logdir"
@@ -68,7 +69,7 @@ ynetd () {
 
 ytester () {
   ynetd -listen "localhost:$LISTEN_PORT" -proxy "localhost:$PROXY_PORT" "${YARGS[@]}" \
-    bash -c 'exec -a ytester$YTAG "$@"' -- \
+    "$YAS" "ytester$YTAG" \
       "$YTESTER" -port "$PROXY_PORT" "$@"
 }
 

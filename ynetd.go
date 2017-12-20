@@ -1,7 +1,6 @@
 package main
 
 // TODO: kill process after timeout without usage
-// TODO: json config file
 
 import (
 	"flag"

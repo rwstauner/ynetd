@@ -1,5 +1,6 @@
 # v0.4 (Unreleased)
 
+- Add "-config" flag for json config file.
 - Make command optional (just a port forwarder).
 
 # v0.3 (2017-12-09)

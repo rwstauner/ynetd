@@ -100,6 +100,10 @@ func frd() int {
 			return 1
 		}
 	case serve != "":
+		if port == "" {
+			flog("port is required")
+			return 1
+		}
 		listen(":" + port)
 	}
 	return 0
