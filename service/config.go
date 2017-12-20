@@ -28,9 +28,9 @@ func parseTimeout(timeout string) time.Duration {
 	return duration
 }
 
-// New returns a new Service based on the provided Config.
-func New(c Config, pm *procman.ProcessManager) Service {
-	return Service{
+// New returns the address to a new Service based on the provided Config.
+func New(c Config, pm *procman.ProcessManager) *Service {
+	return &Service{
 		Proxy:   c.Proxy,
 		Command: pm.Process(c.Command),
 		Timeout: parseTimeout(c.Timeout),

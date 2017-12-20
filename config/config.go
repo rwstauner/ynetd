@@ -11,7 +11,7 @@ type Config struct {
 }
 
 // MakeServices creates Service objects from Config objects.
-func MakeServices(cfg Config, pm *procman.ProcessManager) (services []service.Service, err error) {
+func MakeServices(cfg Config, pm *procman.ProcessManager) (services []*service.Service, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = r.(error)
