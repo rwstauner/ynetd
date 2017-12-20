@@ -86,6 +86,6 @@ func (s *Service) proxy(src string, dst string) {
 // Listen starts listening on the defined ports for incoming connections.
 func (s *Service) Listen() {
 	for src, dst := range s.Proxy {
-		s.proxy(src, dst)
+		go s.proxy(src, dst)
 	}
 }

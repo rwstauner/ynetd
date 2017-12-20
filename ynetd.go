@@ -66,7 +66,7 @@ func frd() int {
 	}
 
 	for _, svc := range services {
-		go svc.Listen()
+		svc.Listen()
 	}
 
 	go setupSignals(pm)
