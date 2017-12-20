@@ -13,7 +13,7 @@ var (
 	after   = 0 * time.Millisecond
 	before  = 0 * time.Millisecond
 	knock   = false
-	loop    = true
+	loop    = false
 	port    = ""
 	send    = ""
 	serve   = ""
