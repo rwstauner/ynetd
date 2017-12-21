@@ -29,9 +29,10 @@ automatically if a request to them is made.
 
 One service can be configured on the command line:
 
-    -proxy   # address pairs to listen on/proxy to ("from:port to:port from2 to2")
-    -timeout # duration to wait before aborting connection
-    args...  # command to run
+    -proxy     # Address pairs to listen on/proxy to ("from:port to:port from2 to2")
+    -proxy-sep # Alternate character to separate proxy addresses
+    -timeout   # Duration to wait before aborting connection
+    args...    # Command to run
 
 Alternatively (or additionally) multiple services
 can be configured by specifying a JSON configuration file:

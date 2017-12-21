@@ -11,15 +11,17 @@ import (
 
 var configfile string
 var listenAddress string
+var proxySep = " "
 var proxySpec string
 var timeout = service.DefaultTimeout
 
 func init() {
 	const (
-		configUsage  = "Path to configuration file"
-		listenUsage  = "Address to listen on (deprecated)"
-		proxyUsage   = "Addresses to proxy, separated by spaces (\"fromhost:port tohost:port from to\")"
-		timeoutUsage = "Duration of time to allow command to start up"
+		configUsage   = "Path to configuration file"
+		listenUsage   = "Address to listen on (deprecated)"
+		proxySepUsage = "Separator character for -proxy"
+		proxyUsage    = "Addresses to proxy, separated by spaces (\"fromhost:port tohost:port from to\")"
+		timeoutUsage  = "Duration of time to allow command to start up"
 	)
 
 	flag.StringVar(&configfile, "config", "", configUsage)
@@ -27,6 +29,9 @@ func init() {
 
 	flag.StringVar(&listenAddress, "listen", "", listenUsage)
 	flag.StringVar(&listenAddress, "l", "", listenUsage+" (shorthand)")
+
+	flag.StringVar(&proxySep, "proxy-sep", proxySep, proxyUsage)
+	flag.StringVar(&proxySep, "ps", proxySep, proxyUsage+" (shorthand)")
 
 	flag.StringVar(&proxySpec, "proxy", "", proxyUsage)
 	flag.StringVar(&proxySpec, "p", "", proxyUsage+" (shorthand)")
@@ -55,7 +60,7 @@ func Load(args []string) (cfg Config, err error) {
 		}
 		proxy[listenAddress] = proxySpec
 	} else if proxySpec != "" {
-		addrs := strings.Split(proxySpec, " ")
+		addrs := strings.Split(proxySpec, proxySep)
 		if len(addrs)%2 != 0 {
 			err = fmt.Errorf("-proxy must contain pairs of addresses: \"from1 to1 from2 to2\"")
 			return

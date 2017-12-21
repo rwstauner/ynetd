@@ -50,6 +50,27 @@ func TestLoadArgs(t *testing.T) {
 	}
 }
 
+func TestLoadProxySep(t *testing.T) {
+	listenAddress = ""
+	proxySep = "+"
+	proxySpec = ":5000+localhost:5001+some:6001+some:7001"
+	cfg, err := Load([]string{})
+
+	if err != nil {
+		t.Errorf("got error: %s", err)
+	}
+
+	if len(cfg.Services) != 1 {
+		t.Errorf("Service not configured from args")
+		return
+	}
+
+	svc := cfg.Services[0]
+	if len(svc.Proxy) != 2 || svc.Proxy[":5000"] != "localhost:5001" || svc.Proxy["some:6001"] != "some:7001" {
+		t.Errorf("Proxy incorrect: %q", svc.Proxy)
+	}
+}
+
 func TestLoadDeprecatedListen(t *testing.T) {
 	listenAddress = ":5008"
 	proxySpec = "localhost:5009"

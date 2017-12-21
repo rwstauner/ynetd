@@ -4,6 +4,7 @@
   This enables configuring multiple services.
 - Deprecate "-listen".
   Instead pairs of addresses can be specified with -proxy "from to".
+- Add -proxy-sep to configure the separator character used with -proxy.
 - Make command optional (just a port forwarder).
 
 # v0.3 (2017-12-09)
