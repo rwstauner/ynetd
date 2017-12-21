@@ -1,0 +1,8 @@
+{
+  "*.go": {
+    "alternate": "{}_test.go"
+  },
+  "*_test.go": {
+    "alternate": "{}.go"
+  }
+}
