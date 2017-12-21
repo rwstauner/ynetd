@@ -1,10 +1,12 @@
-# v0.4 (Unreleased)
+# v0.5 (Unreleased)
+
+# v0.4 (2017-12-21)
 
 - Add "-config" flag for json config file.
   This enables configuring multiple services.
 - Deprecate "-listen".
   Instead pairs of addresses can be specified with -proxy "from to".
-- Add -proxy-sep to configure the separator character used with -proxy.
+- Add "-proxy-sep" to configure the separator character used with "-proxy".
 - Make command optional (just a port forwarder).
 
 # v0.3 (2017-12-09)
