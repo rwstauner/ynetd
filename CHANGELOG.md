@@ -1,8 +1,9 @@
 # v0.4 (Unreleased)
 
 - Add "-config" flag for json config file.
-  This enables configuring multiple services
-  and multiple ports per service.
+  This enables configuring multiple services.
+- Deprecate "-listen".
+  Instead pairs of addresses can be specified with -proxy "from to".
 - Make command optional (just a port forwarder).
 
 # v0.3 (2017-12-09)

@@ -4,7 +4,7 @@
 
 A tiny super server written in go.
 
-    ynetd -listen ":8080" -proxy "localhost:8081" cmd arg...
+    ynetd -proxy ":8080 localhost:8081" cmd arg...
 
 - Listen on the specified address for connections.
 - When one is received, launch the specified program (with arguments).
@@ -29,12 +29,11 @@ automatically if a request to them is made.
 
 One service can be configured on the command line:
 
-    -listen  # host/port to listen for incoming connections
-    -proxy   # host/port to forward to
+    -proxy   # address pairs to listen on/proxy to ("from:port to:port from2 to2")
     -timeout # duration to wait before aborting connection
     args...  # command to run
 
-Alternatively (or additionally) multiple services (and multiple ports)
+Alternatively (or additionally) multiple services
 can be configured by specifying a JSON configuration file:
 
     -config /path/to/config.json
@@ -56,7 +55,7 @@ with something like this:
 
 The command to run is optional, without it ynetd is just a port forwarder:
 
-    ynetd -listen :5001 -proxy remote.host:8080
+    ynetd -proxy "localhost:5001 remote.host:8080"
 
 ## Why?
 

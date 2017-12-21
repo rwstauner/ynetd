@@ -87,6 +87,7 @@ func frd() int {
 					c <- conn
 					break
 				}
+				time.Sleep(250 * time.Millisecond)
 			}
 		}()
 		select {

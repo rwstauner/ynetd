@@ -3,20 +3,22 @@ package config
 import (
 	"flag"
 	"fmt"
+	"os"
+	"strings"
 
 	"github.com/rwstauner/ynetd/service"
 )
 
 var configfile string
 var listenAddress string
-var proxyAddress string
+var proxySpec string
 var timeout = service.DefaultTimeout
 
 func init() {
 	const (
 		configUsage  = "Path to configuration file"
-		listenUsage  = "Address to listen on"
-		proxyUsage   = "Address to proxy to (the address the command should be listening on)"
+		listenUsage  = "Address to listen on (deprecated)"
+		proxyUsage   = "Addresses to proxy, separated by spaces (\"fromhost:port tohost:port from to\")"
 		timeoutUsage = "Duration of time to allow command to start up"
 	)
 
@@ -26,8 +28,8 @@ func init() {
 	flag.StringVar(&listenAddress, "listen", "", listenUsage)
 	flag.StringVar(&listenAddress, "l", "", listenUsage+" (shorthand)")
 
-	flag.StringVar(&proxyAddress, "proxy", "", proxyUsage)
-	flag.StringVar(&proxyAddress, "p", "", proxyUsage+" (shorthand)")
+	flag.StringVar(&proxySpec, "proxy", "", proxyUsage)
+	flag.StringVar(&proxySpec, "p", "", proxyUsage+" (shorthand)")
 
 	flag.DurationVar(&timeout, "timeout", timeout, timeoutUsage)
 	flag.DurationVar(&timeout, "t", timeout, timeoutUsage+" (shorthand)")
@@ -44,19 +46,39 @@ func Load(args []string) (cfg Config, err error) {
 		}
 	}
 
+	proxy := make(map[string]string)
 	if listenAddress != "" {
-		if proxyAddress == "" {
-			err = fmt.Errorf("proxyAddress is required")
+		fmt.Fprintln(os.Stderr, "-listen is deprecated.  Use -proxy 'from:port to:port'")
+		if proxySpec == "" {
+			err = fmt.Errorf("-proxy is required")
+			return
 		}
+		proxy[listenAddress] = proxySpec
+	} else if proxySpec != "" {
+		addrs := strings.Split(proxySpec, " ")
+		if len(addrs)%2 != 0 {
+			err = fmt.Errorf("-proxy must contain pairs of addresses: \"from1 to1 from2 to2\"")
+			return
+		}
+		var key string
+		for i, s := range addrs {
+			if i%2 == 0 {
+				key = s
+			} else {
+				proxy[key] = s
+			}
+		}
+	} else if len(args) > 0 {
+		err = fmt.Errorf("-proxy is required")
+		return
+	}
+
+	if len(proxy) > 0 {
 		cfg.Services = append(cfg.Services, service.Config{
-			Proxy: map[string]string{
-				listenAddress: proxyAddress,
-			},
+			Proxy:   proxy,
 			Command: args,
 			Timeout: timeout.String(),
 		})
-	} else if proxyAddress != "" {
-		err = fmt.Errorf("listenAddress is required")
 	}
 
 	return

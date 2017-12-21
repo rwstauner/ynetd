@@ -12,7 +12,7 @@ load helpers
   # Tester on proxy port.
   ysend -port "$PROXY_PORT" foo | grep -q "nocmd$YTAG"
 
-  ynetd -listen ":$LISTEN_PORT" -proxy "localhost:$PROXY_PORT"
+  ynetd -proxy ":$LISTEN_PORT localhost:$PROXY_PORT"
   running ynetd
 
   ysend -timeout 1s hello | grep -q "nocmd$YTAG"

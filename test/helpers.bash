@@ -68,7 +68,7 @@ ynetd () {
 }
 
 ytester () {
-  ynetd -listen "localhost:$LISTEN_PORT" -proxy "localhost:$PROXY_PORT" "${YARGS[@]}" \
+  ynetd -proxy "localhost:$LISTEN_PORT localhost:$PROXY_PORT" "${YARGS[@]}" \
     "$YAS" "ytester$YTAG" \
       "$YTESTER" -port "$PROXY_PORT" "$@"
 }

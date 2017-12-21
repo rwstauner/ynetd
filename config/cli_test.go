@@ -11,7 +11,7 @@ import (
 
 func TestLoadNoArgs(t *testing.T) {
 	listenAddress = ""
-	proxyAddress = ""
+	proxySpec = ""
 	cfg, err := Load([]string{})
 
 	if len(cfg.Services) != 0 {
@@ -19,13 +19,13 @@ func TestLoadNoArgs(t *testing.T) {
 	}
 
 	if err != nil {
-		t.Errorf("got error: %s", err)
+		t.Errorf("unexpected error: %s", err)
 	}
 }
 
-func TestLoadBasicArgs(t *testing.T) {
-	listenAddress = ":5000"
-	proxyAddress = "localhost:5001"
+func TestLoadArgs(t *testing.T) {
+	listenAddress = ""
+	proxySpec = ":5000 localhost:5001 some:6001 some:7001"
 	timeout = 2 * time.Second
 	cfg, err := Load([]string{"foo", "bar"})
 
@@ -35,50 +35,89 @@ func TestLoadBasicArgs(t *testing.T) {
 
 	if len(cfg.Services) != 1 {
 		t.Errorf("Service not configured from args")
+		return
 	}
 
 	svc := cfg.Services[0]
-	if len(svc.Proxy) != 1 {
-		t.Errorf("Proxy incorrect")
-	}
-	if svc.Proxy[":5000"] != "localhost:5001" {
-		t.Errorf("Proxy incorrect")
+	if len(svc.Proxy) != 2 || svc.Proxy[":5000"] != "localhost:5001" || svc.Proxy["some:6001"] != "some:7001" {
+		t.Errorf("Proxy incorrect: %q", svc.Proxy)
 	}
 	if fmt.Sprintf("%s", svc.Command) != "[foo bar]" {
-		t.Errorf("Command incorrect")
+		t.Errorf("Command incorrect: %s", svc.Command)
 	}
 	if svc.Timeout != "2s" {
-		t.Errorf("Timeout incorrect")
+		t.Errorf("Timeout incorrect: %s", svc.Timeout)
 	}
 }
 
-func TestLoadNoListen(t *testing.T) {
+func TestLoadDeprecatedListen(t *testing.T) {
+	listenAddress = ":5008"
+	proxySpec = "localhost:5009"
+	cfg, err := Load([]string{"foo", "bar"})
+
+	if err != nil {
+		t.Errorf("got error: %s", err)
+	}
+
+	if len(cfg.Services) != 1 {
+		t.Errorf("Service not configured from args")
+		return
+	}
+
+	svc := cfg.Services[0]
+	if len(svc.Proxy) != 1 || svc.Proxy[":5008"] != "localhost:5009" {
+		t.Errorf("Proxy incorrect: %q", svc.Proxy)
+	}
+	if fmt.Sprintf("%s", svc.Command) != "[foo bar]" {
+		t.Errorf("Command incorrect: %s", svc.Command)
+	}
+}
+
+func TestLoadOddProxy(t *testing.T) {
 	listenAddress = ""
-	proxyAddress = "localhost:5001"
+	tests := []string{"localhost:5001", ":5001 :5002 :5003"}
+
+	for _, val := range tests {
+		t.Run(fmt.Sprintf("-proxy '%s'", val), func(t *testing.T) {
+			proxySpec = val
+			_, err := Load([]string{"foo", "bar"})
+
+			if err == nil {
+				t.Errorf("expected error, got none")
+			} else if !strings.Contains(err.Error(), "-proxy must contain pairs") {
+				t.Errorf("unexpected error: %s", err)
+			}
+		})
+	}
+}
+
+func TestLoadOnlyListen(t *testing.T) {
+	listenAddress = ":5000"
+	proxySpec = ""
 	_, err := Load([]string{"foo", "bar"})
 
 	if err == nil {
 		t.Errorf("expected error, got none")
-	} else if err.Error() != "listenAddress is required" {
+	} else if err.Error() != "-proxy is required" {
 		t.Errorf("unexpected error: %s", err)
 	}
 }
 
 func TestLoadNoProxy(t *testing.T) {
-	listenAddress = ":5000"
-	proxyAddress = ""
+	listenAddress = ""
+	proxySpec = ""
 	_, err := Load([]string{"foo", "bar"})
 
 	if err == nil {
 		t.Errorf("expected error, got none")
-	} else if err.Error() != "proxyAddress is required" {
+	} else if err.Error() != "-proxy is required" {
 		t.Errorf("unexpected error: %s", err)
 	}
 }
 
 func TestLoadConfigFile(t *testing.T) {
 	listenAddress = ""
-	proxyAddress = ""
+	proxySpec = ""
 
 	tmpfile, err := ioutil.TempFile("", "ynetdjson")
 	if err != nil {
@@ -106,26 +145,24 @@ func TestLoadConfigFile(t *testing.T) {
 
 	if len(cfg.Services) != 1 {
 		t.Errorf("services incorrect: %d", len(cfg.Services))
+		return
 	}
 
 	svc := cfg.Services[0]
-	if len(svc.Proxy) != 1 {
-		t.Errorf("Proxy incorrect")
-	}
-	if svc.Proxy[":5000"] != "localhost:5001" {
-		t.Errorf("Proxy incorrect")
+	if len(svc.Proxy) != 1 || svc.Proxy[":5000"] != "localhost:5001" {
+		t.Errorf("Proxy incorrect: %q", svc.Proxy)
 	}
 	if fmt.Sprintf("%s", svc.Command) != "[3 4]" {
-		t.Errorf("Command incorrect")
+		t.Errorf("Command incorrect: %s", svc.Command)
 	}
 	if svc.Timeout != "15ms" {
-		t.Errorf("Timeout incorrect")
+		t.Errorf("Timeout incorrect: %s", svc.Timeout)
 	}
 }
 
 func TestLoadConfigFileError(t *testing.T) {
 	listenAddress = ""
-	proxyAddress = ""
+	proxySpec = ""
 
 	tmpfile, err := ioutil.TempFile("", "ynetdjson")
 	if err != nil {
