@@ -66,7 +66,11 @@ func frd() int {
 	}
 
 	for _, svc := range services {
-		svc.Listen()
+		err := svc.Listen()
+		if err != nil {
+			fmt.Printf("error starting listener: %s\n", err)
+			return 1
+		}
 	}
 
 	go setupSignals(pm)

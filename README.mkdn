@@ -58,6 +58,16 @@ The command to run is optional, without it ynetd is just a port forwarder:
 
     ynetd -proxy "localhost:5001 remote.host:8080"
 
+Addresses can be specified as "host:port", ":port" (all addresses)
+or as "interface:name:port" ("interface:eth0:5001") to listen on
+(all addresses of) the named interface.
+
+This can be useful if you don't know the ip address up front
+but want to "forward from public interface to loopback"
+to avoid having to use additional port numbers:
+
+    -proxy "interface:eth0:5000 localhost:5000"
+
 ## Why?
 
 - To reduce memory consumption for services until they are needed.

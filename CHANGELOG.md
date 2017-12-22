@@ -1,5 +1,8 @@
 # v0.5 (Unreleased)
 
+- Allow "-proxy" to accept addresses like "interface:eth0:5001"
+  and translate that to all addresses on that interface.
+
 # v0.4 (2017-12-21)
 
 - Add "-config" flag for json config file.
