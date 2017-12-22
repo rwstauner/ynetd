@@ -58,29 +58,31 @@ func (s *Service) handleConnection(src *net.TCPConn, dst string) {
 	forward(fwd, src)
 }
 
-func (s *Service) proxy(src string, dst string) {
+func (s *Service) proxy(src string, dst string) error {
 	ln, err := net.Listen("tcp", src)
 	if err != nil {
-		logger.Printf("listen error: %s", err.Error())
-		return
+		return err
 	}
-	defer ln.Close()
+	go func() {
+		defer ln.Close()
 
-	logger.Printf("proxy %s -> %s cmd: %s", src, dst, s.Command)
+		logger.Printf("proxy %s -> %s cmd: %s", src, dst, s.Command)
 
-	for {
-		conn, err := ln.Accept()
-		if err != nil {
-			logger.Printf("accept error: %s", err.Error())
-			if opErr, ok := err.(*net.OpError); ok {
-				if !opErr.Temporary() {
-					break
+		for {
+			conn, err := ln.Accept()
+			if err != nil {
+				logger.Printf("accept error: %s", err.Error())
+				if opErr, ok := err.(*net.OpError); ok {
+					if !opErr.Temporary() {
+						break
+					}
 				}
+				continue
 			}
-			continue
+			go s.handleConnection(conn.(*net.TCPConn), dst)
 		}
-		go s.handleConnection(conn.(*net.TCPConn), dst)
-	}
+	}()
+	return nil
 }
 
 // Listen starts listening on the defined ports for incoming connections.
@@ -91,7 +93,10 @@ func (s *Service) Listen() error {
 			return err
 		}
 		for _, addr := range addrs {
-			go s.proxy(addr, dst)
+			err := s.proxy(addr, dst)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil

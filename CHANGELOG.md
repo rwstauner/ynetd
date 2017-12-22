@@ -2,6 +2,7 @@
 
 - Allow "-proxy" to accept addresses like "interface:eth0:5001"
   and translate that to all addresses on that interface.
+- Exit immediately when listen fails for any address.
 
 # v0.4 (2017-12-21)
 
