@@ -34,8 +34,7 @@ func TestLoadArgs(t *testing.T) {
 	}
 
 	if len(cfg.Services) != 1 {
-		t.Errorf("Service not configured from args")
-		return
+		t.Fatalf("Service not configured from args")
 	}
 
 	svc := cfg.Services[0]
@@ -61,8 +60,7 @@ func TestLoadProxySep(t *testing.T) {
 	}
 
 	if len(cfg.Services) != 1 {
-		t.Errorf("Service not configured from args")
-		return
+		t.Fatalf("Service not configured from args")
 	}
 
 	svc := cfg.Services[0]
@@ -81,8 +79,7 @@ func TestLoadDeprecatedListen(t *testing.T) {
 	}
 
 	if len(cfg.Services) != 1 {
-		t.Errorf("Service not configured from args")
-		return
+		t.Fatalf("Service not configured from args")
 	}
 
 	svc := cfg.Services[0]
@@ -165,8 +162,7 @@ func TestLoadConfigFile(t *testing.T) {
 	}
 
 	if len(cfg.Services) != 1 {
-		t.Errorf("services incorrect: %d", len(cfg.Services))
-		return
+		t.Fatalf("services incorrect: %d", len(cfg.Services))
 	}
 
 	svc := cfg.Services[0]
