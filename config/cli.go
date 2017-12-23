@@ -5,15 +5,13 @@ import (
 	"fmt"
 	"os"
 	"strings"
-
-	"github.com/rwstauner/ynetd/service"
 )
 
 var configfile string
 var listenAddress string
 var proxySep = " "
 var proxySpec string
-var timeout = service.DefaultTimeout
+var timeout = DefaultTimeout
 
 func init() {
 	const (
@@ -79,7 +77,7 @@ func Load(args []string) (cfg Config, err error) {
 	}
 
 	if len(proxy) > 0 {
-		cfg.Services = append(cfg.Services, service.Config{
+		cfg.Services = append(cfg.Services, Service{
 			Proxy:   proxy,
 			Command: args,
 			Timeout: timeout.String(),

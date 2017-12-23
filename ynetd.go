@@ -54,10 +54,14 @@ func frd() int {
 	}
 
 	pm := procman.New()
-	services, err := config.MakeServices(cfg, pm)
-	if err != nil {
-		fmt.Println(err)
-		return 1
+	var services []*service.Service
+	for _, sc := range cfg.Services {
+		service, err := service.New(sc, pm)
+		if err != nil {
+			fmt.Println(err)
+			return 1
+		}
+		services = append(services, service)
 	}
 
 	if len(services) == 0 {

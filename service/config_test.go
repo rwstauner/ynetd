@@ -5,18 +5,23 @@ import (
 	"testing"
 	"time"
 
+	"github.com/rwstauner/ynetd/config"
 	"github.com/rwstauner/ynetd/procman"
 )
 
 func TestNew(t *testing.T) {
-	svc := New(Config{
+	svc, err := New(config.Service{
 		Proxy:   map[string]string{"hello": "goodbye"},
 		Command: []string{"sleep", "10"},
 		Timeout: "4s",
 	}, procman.New())
 
-	if svc.Proxy["hello"] != "goodbye" {
-		t.Errorf("proxy incorrect: %s", svc.Proxy)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err)
+	}
+
+	if len(svc.Proxy) != 1 || svc.Proxy["hello"] != "goodbye" {
+		t.Errorf("proxy incorrect: %q", svc.Proxy)
 	}
 
 	if svc.Command == nil {
@@ -31,16 +36,12 @@ func TestNew(t *testing.T) {
 }
 
 func TestNewError(t *testing.T) {
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				if !strings.Contains(r.(error).Error(), "invalid duration") {
-					t.Errorf("unexpected error: %s", r)
-				}
-			} else {
-				t.Errorf("expected error, got none")
-			}
-		}()
-		_ = New(Config{Timeout: "foo"}, procman.New())
-	}()
+	_, err := New(config.Service{Timeout: "foo"}, procman.New())
+
+	if err == nil {
+		t.Errorf("expected error, got none")
+	}
+	if !strings.Contains(err.Error(), "invalid duration") {
+		t.Errorf("unexpected error: %s", err)
+	}
 }

@@ -6,6 +6,7 @@ import (
 	"syscall"
 
 	"github.com/hashicorp/go-reap"
+	"github.com/rwstauner/ynetd/config"
 )
 
 // ProcessManager manages launching and reaping of processes.
@@ -26,12 +27,12 @@ func New() *ProcessManager {
 
 // Process returns the address to a new Process
 // wrapping the command with the ProcessManager embedded.
-func (m *ProcessManager) Process(argv []string) *Process {
-	if len(argv) == 0 {
+func (m *ProcessManager) Process(cfg config.Service) *Process {
+	if len(cfg.Command) == 0 {
 		return nil
 	}
 	return &Process{
-		argv:    argv,
+		argv:    cfg.Command,
 		manager: m,
 	}
 }

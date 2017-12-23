@@ -3,25 +3,15 @@ package service
 import (
 	"time"
 
+	"github.com/rwstauner/ynetd/config"
 	"github.com/rwstauner/ynetd/procman"
 )
 
-// DefaultTimeout is the default timeout duration for new connections
-// to proxy to the service.
-var DefaultTimeout = 5 * time.Minute
-
-// Config holds string representations of Service attributes.
-type Config struct {
-	Proxy   map[string]string
-	Command []string
-	Timeout string
-}
-
-func parseTimeout(timeout string) time.Duration {
-	if timeout == "" {
-		return DefaultTimeout
+func parseDuration(str string, defaultVal time.Duration) time.Duration {
+	if str == "" {
+		return defaultVal
 	}
-	duration, err := time.ParseDuration(timeout)
+	duration, err := time.ParseDuration(str)
 	if err != nil {
 		panic(err)
 	}
@@ -29,10 +19,16 @@ func parseTimeout(timeout string) time.Duration {
 }
 
 // New returns the address to a new Service based on the provided Config.
-func New(c Config, pm *procman.ProcessManager) *Service {
-	return &Service{
+func New(c config.Service, pm *procman.ProcessManager) (svc *Service, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = r.(error)
+		}
+	}()
+	svc = &Service{
 		Proxy:   c.Proxy,
-		Command: pm.Process(c.Command),
-		Timeout: parseTimeout(c.Timeout),
+		Command: pm.Process(c),
+		Timeout: parseDuration(c.Timeout, config.DefaultTimeout),
 	}
+	return
 }
