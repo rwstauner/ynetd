@@ -10,9 +10,10 @@ import (
 
 // Service represents a single service proxy.
 type Service struct {
-	Proxy   map[string]string
-	Command *procman.Process
-	Timeout time.Duration
+	Proxy     map[string]string
+	Command   *procman.Process
+	Timeout   time.Duration
+	StopAfter time.Duration
 }
 
 func forward(src *net.TCPConn, dst *net.TCPConn) {
@@ -58,6 +59,10 @@ func (s *Service) handleConnection(src *net.TCPConn, dst string) {
 	forward(fwd, src)
 }
 
+func (s *Service) shouldStop() bool {
+	return s.StopAfter > 0
+}
+
 func (s *Service) proxy(src string, dst string) error {
 	ln, err := net.Listen("tcp", src)
 	if err != nil {
@@ -68,18 +73,52 @@ func (s *Service) proxy(src string, dst string) error {
 
 		logger.Printf("proxy %s -> %s cmd: %s", src, dst, s.Command)
 
-		for {
-			conn, err := ln.Accept()
-			if err != nil {
-				logger.Printf("accept error: %s", err.Error())
-				if opErr, ok := err.(*net.OpError); ok {
-					if !opErr.Temporary() {
-						break
+		conns := make(chan *net.TCPConn)
+		go func() {
+			for {
+				conn, err := ln.Accept()
+				if err != nil {
+					logger.Printf("accept error: %s", err.Error())
+					if opErr, ok := err.(*net.OpError); ok {
+						if !opErr.Temporary() {
+							break
+						}
 					}
+					continue
 				}
-				continue
+				conns <- conn.(*net.TCPConn)
 			}
-			go s.handleConnection(conn.(*net.TCPConn), dst)
+		}()
+
+		var stopTimeChan <-chan time.Time
+		var stopTimer *time.Timer
+		stopped := false
+
+		for {
+			select {
+			case conn := <-conns:
+				go s.handleConnection(conn, dst)
+				if s.shouldStop() {
+					if stopTimer == nil {
+						stopTimer = time.NewTimer(s.StopAfter)
+						stopTimeChan = stopTimer.C
+					} else {
+						if !stopTimer.Stop() {
+							// If the timer expired when we didn't handle it.
+							if !stopped {
+								<-stopTimer.C // drain
+							}
+						}
+						// TODO: We should probably reset this when a connection closes
+						// rather than when it opens.
+						stopTimer.Reset(s.StopAfter)
+					}
+					stopped = false
+				}
+			case <-stopTimeChan:
+				stopped = true
+				s.Command.Stop()
+			}
 		}
 	}()
 	return nil

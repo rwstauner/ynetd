@@ -203,3 +203,51 @@ func TestLoadConfigFileError(t *testing.T) {
 		t.Errorf("got %d services", len(cfg.Services))
 	}
 }
+
+func TestLoadStopAfter(t *testing.T) {
+	setup := func(t *testing.T) Service {
+		configfile = ""
+		proxySep = " "
+		proxySpec = ":5000 localhost:5001"
+
+		cfg, err := Load([]string{})
+
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+		}
+
+		if len(cfg.Services) != 1 {
+			t.Fatalf("unexpected services: %q", cfg.Services)
+		}
+
+		return cfg.Services[0]
+	}
+
+	t.Run("default", func(t *testing.T) {
+		stopAfter = 0
+		stopSignal = "INT"
+
+		svc := setup(t)
+
+		if svc.StopAfter != "0s" {
+			t.Errorf("incorrect StopAfter: %q", svc.StopAfter)
+		}
+		if svc.StopSignal != "INT" {
+			t.Errorf("incorrect StopAfter: %q", svc.StopSignal)
+		}
+	})
+
+	t.Run("custom", func(t *testing.T) {
+		stopAfter = 200 * time.Millisecond
+		stopSignal = "TERM"
+
+		svc := setup(t)
+
+		if svc.StopAfter != "200ms" {
+			t.Errorf("incorrect StopAfter: %q", svc.StopAfter)
+		}
+		if svc.StopSignal != "TERM" {
+			t.Errorf("incorrect StopAfter: %q", svc.StopSignal)
+		}
+	})
+}

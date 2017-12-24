@@ -12,18 +12,25 @@ var listenAddress string
 var proxySep = " "
 var proxySpec string
 var timeout = DefaultTimeout
+var stopAfter = DefaultStopAfter
+var stopSignal = "INT"
 
 func init() {
 	const (
-		configUsage   = "Path to configuration file"
-		listenUsage   = "Address to listen on (deprecated)"
-		proxySepUsage = "Separator character for -proxy"
-		proxyUsage    = "Addresses to proxy, separated by spaces (\"fromhost:port tohost:port from to\")"
-		timeoutUsage  = "Duration of time to allow command to start up"
+		configUsage     = "Path to configuration file"
+		listenUsage     = "Address to listen on (deprecated)"
+		proxySepUsage   = "Separator character for -proxy"
+		proxyUsage      = "Addresses to proxy, separated by spaces (\"fromhost:port tohost:port from to\")"
+		timeoutUsage    = "Duration of time to allow command to start up"
+		stopAfterUsage  = "Duration of time after the last client connection to stop the command"
+		stopSignalUsage = "Signal to send to stop"
 	)
 
 	flag.StringVar(&configfile, "config", "", configUsage)
 	flag.StringVar(&configfile, "c", "", configUsage+" (shorthand)")
+
+	flag.DurationVar(&stopAfter, "stop-after", stopAfter, stopAfterUsage)
+	flag.StringVar(&stopSignal, "stop-signal", stopSignal, stopSignalUsage)
 
 	flag.StringVar(&listenAddress, "listen", "", listenUsage)
 	flag.StringVar(&listenAddress, "l", "", listenUsage+" (shorthand)")
@@ -78,9 +85,11 @@ func Load(args []string) (cfg Config, err error) {
 
 	if len(proxy) > 0 {
 		cfg.Services = append(cfg.Services, Service{
-			Proxy:   proxy,
-			Command: args,
-			Timeout: timeout.String(),
+			Proxy:      proxy,
+			Command:    args,
+			Timeout:    timeout.String(),
+			StopAfter:  stopAfter.String(),
+			StopSignal: stopSignal,
 		})
 	}
 

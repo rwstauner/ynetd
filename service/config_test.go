@@ -11,9 +11,10 @@ import (
 
 func TestNew(t *testing.T) {
 	svc, err := New(config.Service{
-		Proxy:   map[string]string{"hello": "goodbye"},
-		Command: []string{"sleep", "10"},
-		Timeout: "4s",
+		Proxy:     map[string]string{"hello": "goodbye"},
+		Command:   []string{"sleep", "10"},
+		Timeout:   "4s",
+		StopAfter: "10m",
 	}, procman.New())
 
 	if err != nil {
@@ -32,6 +33,10 @@ func TestNew(t *testing.T) {
 
 	if svc.Timeout != (4 * time.Second) {
 		t.Errorf("timeout incorrect: %s", svc.Timeout)
+	}
+
+	if svc.StopAfter != (10 * time.Minute) {
+		t.Errorf("stop after incorrect: %s", svc.StopAfter)
 	}
 }
 

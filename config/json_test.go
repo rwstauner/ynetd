@@ -19,11 +19,15 @@ func TestParseConfigFile(t *testing.T) {
 			{
 				"Proxy": {":3000": "localhost:4000"},
 				"Command": ["sleep", "1"],
+				"StopAfter": "10m",
+				"StopSignal": "INT",
 				"Timeout": "150ms"
 			},
 			{
 				"Proxy": {":3001": "localhost:4001"},
 				"Command": ["sleep", "2"],
+				"StopAfter": "11m",
+				"StopSignal": "TERM",
 				"Timeout": "151ms"
 			}
 		]
@@ -52,6 +56,12 @@ func TestParseConfigFile(t *testing.T) {
 		}
 		if svc.Timeout != fmt.Sprintf("%dms", i+150) {
 			t.Errorf("unexpected timeout: %s", svc.Timeout)
+		}
+		if svc.StopAfter != fmt.Sprintf("%dm", i+10) {
+			t.Errorf("unexpected StopAfter: %s", svc.StopAfter)
+		}
+		if svc.StopSignal != []string{"INT", "TERM"}[i] {
+			t.Errorf("unexpected StopSignal: %s", svc.StopSignal)
 		}
 	}
 }

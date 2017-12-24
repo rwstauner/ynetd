@@ -13,6 +13,7 @@ import (
 type ProcessManager struct {
 	procs    map[int]*Process // pid -> proc
 	launcher chan *Process
+	stopper  chan *Process
 	signals  chan os.Signal
 }
 
@@ -20,6 +21,7 @@ type ProcessManager struct {
 func New() *ProcessManager {
 	return &ProcessManager{
 		launcher: make(chan *Process),
+		stopper:  make(chan *Process),
 		procs:    make(map[int]*Process),
 		signals:  make(chan os.Signal),
 	}
@@ -32,8 +34,9 @@ func (m *ProcessManager) Process(cfg config.Service) *Process {
 		return nil
 	}
 	return &Process{
-		argv:    cfg.Command,
-		manager: m,
+		argv:       cfg.Command,
+		manager:    m,
+		stopSignal: getSignal(cfg.StopSignal, syscall.SIGINT),
 	}
 }
 
@@ -95,6 +98,15 @@ func (m *ProcessManager) Manage() {
 			if proc.cmd == nil {
 				proc.cmd = m.launch(proc)
 				m.procs[proc.cmd.Process.Pid] = proc
+			}
+
+		case proc := <-m.stopper:
+			if proc.cmd != nil {
+				logger.Printf("stopping %s", proc.argv)
+				if err := proc.cmd.Process.Signal(proc.stopSignal); err != nil {
+					logger.Printf("signal error: %s", err)
+				}
+				// The reaper will take it from here.
 			}
 
 		case pid := <-reaper:
