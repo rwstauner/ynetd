@@ -1,4 +1,6 @@
-# v0.5 (Unreleased)
+# v0.6 (Unreleased)
+
+# v0.5 (2017-12-26)
 
 - Allow "-proxy" to accept addresses like "interface:eth0:5001"
   and translate that to all addresses on that interface.
