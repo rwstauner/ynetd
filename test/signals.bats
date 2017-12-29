@@ -25,3 +25,16 @@ ystate () {
   kill -s CONT $YPID
   is `ystate` = S
 }
+
+@test "signal process group" {
+  ynetd -proxy "localhost:$LISTEN_PORT localhost:$PROXY_PORT" -stop-after 2s \
+    "$YAS" "ytester$YTAG" \
+      /bin/bash -c "($YAS ychild$YTAG $YTESTER -port $PROXY_PORT -loop -serve main)"
+
+  knock
+  running ytester
+  running ychild
+  close
+  ! running tester
+  ! running ychild
+}

@@ -1,5 +1,7 @@
 # v0.6 (Unreleased)
 
+- Set and signal process group for service commands (unix).
+
 # v0.5 (2017-12-26)
 
 - Allow "-proxy" to accept addresses like "interface:eth0:5001"

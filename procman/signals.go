@@ -2,11 +2,10 @@ package procman
 
 import (
 	"fmt"
-	"os"
 	"syscall"
 )
 
-func getSignal(sig string, defaultSig os.Signal) os.Signal {
+func getSignal(sig string, defaultSig syscall.Signal) syscall.Signal {
 	switch sig {
 	case "":
 		return defaultSig

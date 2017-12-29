@@ -42,6 +42,7 @@ func (m *ProcessManager) Process(cfg config.Service) *Process {
 
 func (m *ProcessManager) launch(proc *Process) *exec.Cmd {
 	cmd := exec.Command(proc.argv[0], proc.argv[1:]...)
+	prepareCommand(cmd)
 
 	logger.Printf("starting: %s", proc)
 
@@ -76,7 +77,7 @@ func (m *ProcessManager) Manage() {
 			close(done)
 			// Signal them all first.
 			for _, process := range m.procs {
-				if err := process.cmd.Process.Signal(sig); err != nil {
+				if err := process.signal(sig); err != nil {
 					logger.Printf("signal error: %s", err)
 				}
 			}
@@ -103,7 +104,7 @@ func (m *ProcessManager) Manage() {
 		case proc := <-m.stopper:
 			if proc.cmd != nil {
 				logger.Printf("stopping %s", proc.argv)
-				if err := proc.cmd.Process.Signal(proc.stopSignal); err != nil {
+				if err := proc.signal(proc.stopSignal); err != nil {
 					logger.Printf("signal error: %s", err)
 				}
 				// The reaper will take it from here.
