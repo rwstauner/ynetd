@@ -1,4 +1,6 @@
-# v0.6 (Unreleased)
+# v0.7 (Unreleased)
+
+# v0.6 (2017-12-29)
 
 - Set and signal process group for service commands (unix).
 
