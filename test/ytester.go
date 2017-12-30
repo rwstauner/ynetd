@@ -10,15 +10,16 @@ import (
 )
 
 var (
-	after   = 0 * time.Millisecond
-	before  = 0 * time.Millisecond
-	knock   = false
-	loop    = false
-	port    = ""
-	send    = ""
-	serve   = ""
-	timeout = 2 * time.Second
-	logger  = log.New(os.Stderr, "ytester ", log.Ldate|log.Ltime|log.Lmicroseconds)
+	after      = 0 * time.Millisecond
+	before     = 0 * time.Millisecond
+	knock      = false
+	loop       = false
+	port       = ""
+	send       = ""
+	serve      = ""
+	serveAfter = 0 * time.Second
+	timeout    = 2 * time.Second
+	logger     = log.New(os.Stderr, "ytester ", log.Ldate|log.Ltime|log.Lmicroseconds)
 )
 
 func init() {
@@ -29,6 +30,7 @@ func init() {
 	flag.StringVar(&port, "port", port, "port")
 	flag.StringVar(&send, "send", send, "send")
 	flag.StringVar(&serve, "serve", serve, "serve")
+	flag.DurationVar(&serveAfter, "serve-after", serveAfter, "serve-after")
 	flag.DurationVar(&timeout, "timeout", timeout, "timeout")
 }
 
@@ -45,6 +47,10 @@ func listen(addr string) {
 	defer ln.Close()
 
 	flog("listening %s", port)
+
+	msg := "not yet"
+	time.AfterFunc(serveAfter, func() { msg = serve })
+
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
@@ -52,8 +58,8 @@ func listen(addr string) {
 			continue
 		}
 
-		flog("serving: %s", serve)
-		conn.Write([]byte(serve + "\n"))
+		flog("serving: %s", msg)
+		conn.Write([]byte(msg + "\n"))
 		conn.Close()
 
 		time.Sleep(after)

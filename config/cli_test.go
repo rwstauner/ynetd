@@ -27,6 +27,7 @@ func TestLoadArgs(t *testing.T) {
 	listenAddress = ""
 	proxySpec = ":5000 localhost:5001 some:6001 some:7001"
 	timeout = 2 * time.Second
+	waitAfterStart = 500 * time.Millisecond
 	cfg, err := Load([]string{"foo", "bar"})
 
 	if err != nil {
@@ -46,6 +47,9 @@ func TestLoadArgs(t *testing.T) {
 	}
 	if svc.Timeout != "2s" {
 		t.Errorf("Timeout incorrect: %s", svc.Timeout)
+	}
+	if svc.WaitAfterStart != "500ms" {
+		t.Errorf("WaitAfterStart incorrect: %s", svc.WaitAfterStart)
 	}
 }
 
@@ -147,7 +151,8 @@ func TestLoadConfigFile(t *testing.T) {
 			{
 				"Proxy": {":5000": "localhost:5001"},
 				"Command": ["3", "4"],
-				"Timeout": "15ms"
+				"Timeout": "15ms",
+				"WaitAfterStart": "25ms"
 			}
 		]
 	}`))
@@ -174,6 +179,9 @@ func TestLoadConfigFile(t *testing.T) {
 	}
 	if svc.Timeout != "15ms" {
 		t.Errorf("Timeout incorrect: %s", svc.Timeout)
+	}
+	if svc.WaitAfterStart != "25ms" {
+		t.Errorf("WaitAfterStart incorrect: %s", svc.WaitAfterStart)
 	}
 }
 

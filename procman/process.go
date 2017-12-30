@@ -4,21 +4,31 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"sync"
+	"time"
 )
 
 // Process represents a command managed by a ProcessManager.
 type Process struct {
-	argv       []string
-	cmd        *exec.Cmd
-	manager    *ProcessManager
-	mutex      *sync.Mutex
-	stopSignal os.Signal
+	argv           []string
+	cmd            *exec.Cmd
+	manager        *ProcessManager
+	started        time.Time
+	stopSignal     os.Signal
+	waitAfterStart time.Duration
+	waitUntil      time.Time
+}
+
+type launchRequest struct {
+	process *Process
+	ready   chan bool
 }
 
 // LaunchOnce launches the process if it isn't already running.
 func (p *Process) LaunchOnce() {
-	p.manager.launcher <- p
+	ready := make(chan bool)
+	req := &launchRequest{process: p, ready: ready}
+	p.manager.launcher <- req
+	<-ready
 }
 
 // Stop sends the configured signal to the process.

@@ -21,14 +21,16 @@ func TestParseConfigFile(t *testing.T) {
 				"Command": ["sleep", "1"],
 				"StopAfter": "10m",
 				"StopSignal": "INT",
-				"Timeout": "150ms"
+				"Timeout": "150ms",
+				"WaitAfterStart": "250ms"
 			},
 			{
 				"Proxy": {":3001": "localhost:4001"},
 				"Command": ["sleep", "2"],
 				"StopAfter": "11m",
 				"StopSignal": "TERM",
-				"Timeout": "151ms"
+				"Timeout": "151ms",
+				"WaitAfterStart": "251ms"
 			}
 		]
 	}`))
@@ -45,23 +47,23 @@ func TestParseConfigFile(t *testing.T) {
 	}
 
 	for i, svc := range cfg.Services {
-		if len(svc.Proxy) != 1 {
-			t.Errorf("unexpected proxy: %v", svc.Proxy)
-		}
-		if svc.Proxy[fmt.Sprintf(":%d", i+3000)] != fmt.Sprintf("localhost:%d", i+4000) {
-			t.Errorf("unexpected proxy: %v", svc.Proxy)
+		if len(svc.Proxy) != 1 || svc.Proxy[fmt.Sprintf(":%d", i+3000)] != fmt.Sprintf("localhost:%d", i+4000) {
+			t.Errorf("unexpected Proxy: %v", svc.Proxy)
 		}
 		if fmt.Sprintf("%s", svc.Command) != fmt.Sprintf("[sleep %d]", i+1) {
-			t.Errorf("unexpected command: %s", svc.Command)
+			t.Errorf("unexpected Command: %s", svc.Command)
 		}
 		if svc.Timeout != fmt.Sprintf("%dms", i+150) {
-			t.Errorf("unexpected timeout: %s", svc.Timeout)
+			t.Errorf("unexpected Timeout: %s", svc.Timeout)
 		}
 		if svc.StopAfter != fmt.Sprintf("%dm", i+10) {
 			t.Errorf("unexpected StopAfter: %s", svc.StopAfter)
 		}
 		if svc.StopSignal != []string{"INT", "TERM"}[i] {
 			t.Errorf("unexpected StopSignal: %s", svc.StopSignal)
+		}
+		if svc.WaitAfterStart != fmt.Sprintf("%dms", i+250) {
+			t.Errorf("unexpected WaitAfterStart: %s", svc.WaitAfterStart)
 		}
 	}
 }

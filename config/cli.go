@@ -14,16 +14,18 @@ var proxySpec string
 var timeout = DefaultTimeout
 var stopAfter = DefaultStopAfter
 var stopSignal = "INT"
+var waitAfterStart = DefaultWaitAfterStart
 
 func init() {
 	const (
-		configUsage     = "Path to configuration file"
-		listenUsage     = "Address to listen on (deprecated)"
-		proxySepUsage   = "Separator character for -proxy"
-		proxyUsage      = "Addresses to proxy, separated by spaces (\"fromhost:port tohost:port from to\")"
-		timeoutUsage    = "Duration of time to allow command to start up"
-		stopAfterUsage  = "Duration of time after the last client connection to stop the command"
-		stopSignalUsage = "Signal to send to stop"
+		configUsage         = "Path to configuration file"
+		listenUsage         = "Address to listen on (deprecated)"
+		proxySepUsage       = "Separator character for -proxy"
+		proxyUsage          = "Addresses to proxy, separated by spaces (\"fromhost:port tohost:port from to\")"
+		timeoutUsage        = "Duration of time to allow connections to attempt to forward"
+		stopAfterUsage      = "Duration of time after the last client connection to stop the command"
+		stopSignalUsage     = "Signal to send to stop"
+		waitAfterStartUsage = "Duration of time to wait while command starts before forwarding"
 	)
 
 	flag.StringVar(&configfile, "config", "", configUsage)
@@ -43,6 +45,8 @@ func init() {
 
 	flag.DurationVar(&timeout, "timeout", timeout, timeoutUsage)
 	flag.DurationVar(&timeout, "t", timeout, timeoutUsage+" (shorthand)")
+
+	flag.DurationVar(&waitAfterStart, "wait-after-start", waitAfterStart, waitAfterStartUsage)
 }
 
 // Load config from cli arguments.
@@ -85,11 +89,12 @@ func Load(args []string) (cfg Config, err error) {
 
 	if len(proxy) > 0 {
 		cfg.Services = append(cfg.Services, Service{
-			Proxy:      proxy,
-			Command:    args,
-			Timeout:    timeout.String(),
-			StopAfter:  stopAfter.String(),
-			StopSignal: stopSignal,
+			Proxy:          proxy,
+			Command:        args,
+			Timeout:        timeout.String(),
+			StopAfter:      stopAfter.String(),
+			StopSignal:     stopSignal,
+			WaitAfterStart: waitAfterStart.String(),
 		})
 	}
 

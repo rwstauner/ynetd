@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 	"syscall"
+	"time"
 
 	"github.com/hashicorp/go-reap"
 	"github.com/rwstauner/ynetd/config"
@@ -12,7 +13,7 @@ import (
 // ProcessManager manages launching and reaping of processes.
 type ProcessManager struct {
 	procs    map[int]*Process // pid -> proc
-	launcher chan *Process
+	launcher chan *launchRequest
 	stopper  chan *Process
 	signals  chan os.Signal
 }
@@ -20,7 +21,7 @@ type ProcessManager struct {
 // New returns a new ProcessManager.
 func New() *ProcessManager {
 	return &ProcessManager{
-		launcher: make(chan *Process),
+		launcher: make(chan *launchRequest),
 		stopper:  make(chan *Process),
 		procs:    make(map[int]*Process),
 		signals:  make(chan os.Signal),
@@ -34,9 +35,10 @@ func (m *ProcessManager) Process(cfg config.Service) *Process {
 		return nil
 	}
 	return &Process{
-		argv:       cfg.Command,
-		manager:    m,
-		stopSignal: getSignal(cfg.StopSignal, syscall.SIGINT),
+		argv:           cfg.Command,
+		manager:        m,
+		stopSignal:     getSignal(cfg.StopSignal, syscall.SIGINT),
+		waitAfterStart: config.ParseDuration(cfg.WaitAfterStart, config.DefaultWaitAfterStart),
 	}
 }
 
@@ -95,10 +97,20 @@ func (m *ProcessManager) Manage() {
 			}
 			return
 
-		case proc := <-m.launcher:
+		case req := <-m.launcher:
+			proc := req.process
 			if proc.cmd == nil {
 				proc.cmd = m.launch(proc)
+				proc.started = time.Now()
+				if proc.waitAfterStart > 0 {
+					proc.waitUntil = proc.started.Add(proc.waitAfterStart)
+				}
 				m.procs[proc.cmd.Process.Pid] = proc
+			}
+			if proc.waitAfterStart > 0 && proc.waitUntil.After(time.Now()) {
+				time.AfterFunc(proc.waitUntil.Sub(time.Now()), func() { req.ready <- true })
+			} else {
+				req.ready <- true
 			}
 
 		case proc := <-m.stopper:

@@ -1,4 +1,7 @@
-# v0.7 (Unreleased)
+# v0.7 (2017-12-30)
+
+- Add "-wait-after-start" option for services that aren't quite ready at
+  the moment their port is open.
 
 # v0.6 (2017-12-29)
 
