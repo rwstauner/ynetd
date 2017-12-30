@@ -10,12 +10,12 @@ load helpers
   ysend -timeout 1s hello | lines 0
 
   # Tester on proxy port.
-  ysend -port "$PROXY_PORT" foo | grep -q "nocmd$YTAG"
+  is "`ysend -port "$PROXY_PORT" foo`" = "nocmd$YTAG"
 
   ynetd -proxy ":$LISTEN_PORT localhost:$PROXY_PORT"
   running ynetd
 
-  ysend -timeout 1s hello | grep -q "nocmd$YTAG"
+  is "`ysend -timeout 1s hello`" = "nocmd$YTAG"
   kill "$tester" || :
 
   ylog -y | grep -qF 'cmd: <nil>'

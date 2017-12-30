@@ -6,7 +6,7 @@ load helpers
   ytester -loop -serve "wave$YTAG"
   running ynetd
   ! running ytester
-  ysend hello | grep -qFx "wave$YTAG"
+  is "`ysend hello`" = "wave$YTAG"
   running ytester
   close
   ! running ynetd

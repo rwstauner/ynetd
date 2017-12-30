@@ -8,7 +8,7 @@ load helpers
 
   start=`date +%s`
   # This will wait.
-  ysend "hello" | grep -qFx "timely$YTAG"
+  is "`ysend "hello"`" = "timely$YTAG"
   end=`date +%s`
 
   is $end -ge $((start + 4))
@@ -45,5 +45,5 @@ load helpers
   # Wait for listen to start.
   sleep 2
 
-  ysend hello | grep -qFx "timely$YTAG"
+  is "`ysend hello`" = "timely$YTAG"
 }

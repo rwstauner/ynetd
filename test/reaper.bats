@@ -22,7 +22,7 @@ load helpers
 
   # kill and restart multiple times.
   for i in 1 2 3; {
-    ysend hello | grep -qFx "reap$YTAG"
+    is "`ysend hello`" = "reap$YTAG"
     running ytester
     kill `ypidof ytester`
 
@@ -41,7 +41,7 @@ load helpers
   running ynetd
   ! running ytester
 
-  ysend hello | grep -qFx "reap$YTAG"
+  is "`ysend hello`" = "reap$YTAG"
   running ytester
   kill -s CHLD $YPID
 
@@ -49,5 +49,5 @@ load helpers
   running ytester
   # kill it, try again
 
-  ysend hello | grep -qFx "reap$YTAG"
+  is "`ysend hello`" = "reap$YTAG"
 }

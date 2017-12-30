@@ -14,7 +14,7 @@ load helpers
 
     # Use it.
     for j in 1 2 3; {
-      ysend hello | grep -qFx "stop$YTAG"
+      is "`ysend hello`" = "stop$YTAG"
       sleep 1
     }
 
