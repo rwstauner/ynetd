@@ -108,9 +108,9 @@ func (m *ProcessManager) Manage() {
 				m.procs[proc.cmd.Process.Pid] = proc
 			}
 			if proc.waitAfterStart > 0 && proc.waitUntil.After(time.Now()) {
-				time.AfterFunc(proc.waitUntil.Sub(time.Now()), func() { req.ready <- true })
+				time.AfterFunc(proc.waitUntil.Sub(time.Now()), func() { close(req.ready) })
 			} else {
-				req.ready <- true
+				close(req.ready)
 			}
 
 		case proc := <-m.stopper:
