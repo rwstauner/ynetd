@@ -1,4 +1,4 @@
-# v0.8 (Unreleased)
+# v0.8 (2018-01-07)
 
 - Parse "-config" file as yaml.
   Keys should be lowercased with underscores ("stop_after").
