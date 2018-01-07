@@ -194,7 +194,7 @@ func TestLoadConfigFileError(t *testing.T) {
 		t.Errorf("failed to create tempfile: %s", err)
 	}
 	defer os.Remove(tmpfile.Name())
-	tmpfile.Write([]byte(`{ "Services": [], }`))
+	tmpfile.Write([]byte(`{`))
 	tmpfile.Close()
 
 	configfile = tmpfile.Name()
@@ -203,7 +203,7 @@ func TestLoadConfigFileError(t *testing.T) {
 
 	if err == nil {
 		t.Errorf("expected error, got none")
-	} else if !strings.Contains(err.Error(), fmt.Sprintf("parsing config file '%s': invalid char", tmpfile.Name())) {
+	} else if !strings.Contains(err.Error(), fmt.Sprintf("parsing config file '%s': yaml: line 1: did not find expected node content", tmpfile.Name())) {
 		t.Errorf("unexpected error: %s", err)
 	}
 

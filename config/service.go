@@ -4,8 +4,8 @@ package config
 type Service struct {
 	Proxy          map[string]string
 	Command        []string
-	StopAfter      string
-	StopSignal     string
+	StopAfter      string `yaml:"stop_after"`
+	StopSignal     string `yaml:"stop_signal"`
 	Timeout        string
-	WaitAfterStart string
+	WaitAfterStart string `yaml:"wait_after_start"`
 }

@@ -38,27 +38,26 @@ One service can be configured on the command line:
     args...           # Command to run
 
 Alternatively (or additionally) multiple services
-can be configured by specifying a JSON configuration file:
+can be configured by specifying the path to a YAML configuration file:
 
-    -config /path/to/config.json
+    -config /path/to/ynetd.conf
 
-with something like this:
+Which should look something like:
 
-    {
-        "Services": [
-            {
-                "Proxy": {
-                    ":5000": "localhost:5001",
-                    ":6543": "localhost:7654"
-                },
-                "Command": ["run", "some", "server"],
-                "StopAfter": "10m",
-                "StopSignal": "TERM",
-                "Timeout": "10s",
-                "WaitAfterStart": "2s"
-            }
-        ]
-    }
+    ---
+    services:
+      -
+        proxy:
+          ":5000": "localhost:5001"
+          ":6543": "localhost:7654"
+        command:
+          - run
+          - some
+          - server
+        stop_after: 10m
+        stop_signal: TERM
+        timeout: 10s
+        wait_after_start: 2s
 
 Everything is optional (except for "proxy").
 

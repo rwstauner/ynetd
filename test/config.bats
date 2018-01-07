@@ -6,7 +6,7 @@ load helpers
   $YNETD -config "/tmp/ynetd$YTAG.conf" | grep -qE 'error parsing config file.+no such file'
 }
 
-@test "multiple services" {
+@test "multiple services (json)" {
   tmp=`mktemp -t ynetd.XXXXXX`
   listen2=$((LISTEN_PORT+1))
   proxy2=$((PROXY_PORT+1))
@@ -17,19 +17,51 @@ load helpers
       "Proxy": {
         ":$LISTEN_PORT": "localhost:$PROXY_PORT"
       },
-      "Command": ["$YAS", "ytester1$YTAG", "$YTESTER", "-port", "$PROXY_PORT", "-loop", "-serve", "json1$YTAG"],
+      "Command": ["$YAS", "ytester1$YTAG", "$YTESTER", "-port", "$PROXY_PORT", "-loop", "-serve", "config1$YTAG"],
       "Timeout": "3s"
     },
     {
       "Proxy": {
         ":$listen2": "localhost:$proxy2"
       },
-      "Command": ["$YAS", "ytester2$YTAG", "$YTESTER", "-port", "$proxy2", "-loop", "-serve", "json2$YTAG"],
+      "Command": ["$YAS", "ytester2$YTAG", "$YTESTER", "-port", "$proxy2", "-loop", "-serve", "config2$YTAG"],
       "Timeout": "4s"
     }
   ]
 }
 JSON
+  assert_configuation "$tmp"
+}
+
+@test "multiple services (yaml)" {
+  tmp=`mktemp -t ynetd.XXXXXX`
+  listen2=$((LISTEN_PORT+1))
+  proxy2=$((PROXY_PORT+1))
+  cat <<YAML > "$tmp"
+---
+services:
+  -
+    proxy: {":$LISTEN_PORT": "localhost:$PROXY_PORT"}
+    command: ["$YAS", "ytester1$YTAG", "$YTESTER", "-port", "$PROXY_PORT", "-loop", "-serve", "config1$YTAG"]
+    timeout: "3s"
+  -
+    proxy:
+      ":$listen2": "localhost:$proxy2"
+    command:
+      - "$YAS"
+      - "ytester2$YTAG"
+      - "$YTESTER"
+      - -port
+      - "$proxy2"
+      - -loop
+      - -serve
+      - "config2$YTAG"
+    timeout: 4s
+YAML
+  assert_configuation "$tmp"
+}
+
+assert_configuation () {
   cat "$tmp" >&2
 
   ynetd -config "$tmp"
@@ -38,12 +70,12 @@ JSON
   ! running ytester1
   ! running ytester2
 
-  is "`ysend hello`" = "json1$YTAG"
+  is "`ysend hello`" = "config1$YTAG"
 
   running ytester1
   ! running ytester2
 
-  is "`ysend -port "$listen2" hello`" = "json2$YTAG"
+  is "`ysend -port "$listen2" hello`" = "config2$YTAG"
 
   running ytester1
   running ytester2

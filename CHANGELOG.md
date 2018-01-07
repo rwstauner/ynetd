@@ -1,3 +1,9 @@
+# v0.8 (Unreleased)
+
+- Parse "-config" file as yaml.
+  Keys should be lowercased with underscores ("stop_after").
+  The JSON spellings ("StopAfter") are deprecated.
+
 # v0.7 (2017-12-30)
 
 - Add "-wait-after-start" option for services that aren't quite ready at
