@@ -25,6 +25,17 @@ them available when needed, just put `ynetd` in front of them.
 RAM usage for each container is now only 500K but the services will vivify
 automatically if a request to them is made.
 
+## Installation
+
+Download the zip file for your OS from the [releases](https://github.com/rwstauner/ynetd/releases) page
+or use something like this:
+
+    YNETD_VERSION=v0.8
+    wget -qO /tmp/ynetd.zip https://github.com/rwstauner/ynetd/releases/download/$YNETD_VERSION/ynetd-linux-amd64.zip \
+      && unzip -d /usr/local/bin/ /tmp/ynetd.zip \
+      && rm -f /tmp/ynetd.zip
+
+
 ## Configuration
 
 One service can be configured on the command line:
