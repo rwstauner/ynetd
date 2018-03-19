@@ -1,3 +1,8 @@
+# v0.9 (2018-03-19)
+
+- Remove deprecated -listen option
+- Remove deprecated JSON spellings in config file
+
 # v0.8 (2018-01-07)
 
 - Parse "-config" file as yaml.
