@@ -89,6 +89,8 @@ to avoid having to use additional port numbers:
 ## Why?
 
 - To reduce resource utilization for services until they are needed.
+- To regain resources when they are no longer needed.
+- To simplify container configuration.
 - To learn a little go.
 
 ## Why the name?
