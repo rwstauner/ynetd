@@ -106,16 +106,13 @@ func TestLoadConfigFile(t *testing.T) {
 		t.Errorf("failed to create tempfile: %s", err)
 	}
 	defer os.Remove(tmpfile.Name())
-	tmpfile.Write([]byte(`{
-		"Services": [
-			{
-				"Proxy": {":5000": "localhost:5001"},
-				"Command": ["3", "4"],
-				"Timeout": "15ms",
-				"WaitAfterStart": "25ms"
-			}
-		]
-	}`))
+	tmpfile.Write([]byte(`
+"services":
+  - proxy: {":5000": "localhost:5001"}
+    command: ["3", "4"]
+    timeout: "15ms"
+    wait_after_start: "25ms"
+`))
 	tmpfile.Close()
 
 	configfile = tmpfile.Name()

@@ -6,34 +6,7 @@ load helpers
   $YNETD -config "/tmp/ynetd$YTAG.conf" | grep -qE 'error parsing config file.+no such file'
 }
 
-@test "multiple services (json)" {
-  tmp=`mktemp -t ynetd.XXXXXX`
-  listen2=$((LISTEN_PORT+1))
-  proxy2=$((PROXY_PORT+1))
-  cat <<JSON > "$tmp"
-{
-  "Services": [
-    {
-      "Proxy": {
-        ":$LISTEN_PORT": "localhost:$PROXY_PORT"
-      },
-      "Command": ["$YAS", "ytester1$YTAG", "$YTESTER", "-port", "$PROXY_PORT", "-loop", "-serve", "config1$YTAG"],
-      "Timeout": "3s"
-    },
-    {
-      "Proxy": {
-        ":$listen2": "localhost:$proxy2"
-      },
-      "Command": ["$YAS", "ytester2$YTAG", "$YTESTER", "-port", "$proxy2", "-loop", "-serve", "config2$YTAG"],
-      "Timeout": "4s"
-    }
-  ]
-}
-JSON
-  assert_configuation "$tmp"
-}
-
-@test "multiple services (yaml)" {
+@test "multiple services" {
   tmp=`mktemp -t ynetd.XXXXXX`
   listen2=$((LISTEN_PORT+1))
   proxy2=$((PROXY_PORT+1))
@@ -91,18 +64,12 @@ assert_configuation () {
   listen2=$((LISTEN_PORT+1))
   proxy2=$((PROXY_PORT+1))
   cat <<JSON > "$tmp"
-{
-  "Services": [
-    {
-      "Proxy": {
-        ":$LISTEN_PORT": "localhost:$PROXY_PORT",
-        ":$listen2": "localhost:$proxy2"
-      },
-      "Command": ["$YAS", "ytester$YTAG", "$YTESTER", "-port", "$PROXY_PORT", "-loop", "-serve", "port1$YTAG"],
-      "Timeout": "3s"
-    }
-  ]
-}
+services:
+  - proxy:
+      ":$LISTEN_PORT": "localhost:$PROXY_PORT"
+      ":$listen2": "localhost:$proxy2"
+    command: ["$YAS", "ytester$YTAG", "$YTESTER", "-port", "$PROXY_PORT", "-loop", "-serve", "port1$YTAG"]
+    timeout: "3s"
 JSON
   cat "$tmp" >&2
 

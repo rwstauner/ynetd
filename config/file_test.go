@@ -9,50 +9,6 @@ import (
 	"testing"
 )
 
-func TestParseConfigJson(t *testing.T) {
-	t.Run("minimal json", func(t *testing.T) {
-		bytes := []byte(`{
-			"Services": [
-				{
-					"Proxy": {":3000": "localhost:4000"},
-					"Command": ["sleep", "1"]
-				},
-				{
-					"Command": ["sleep", "2"],
-					"Proxy": {":3001": "localhost:4001"}
-				}
-			]
-		}`)
-		assertValidJSON(t, bytes)
-		assertFileParsed(t, bytes, false)
-	})
-
-	t.Run("full json", func(t *testing.T) {
-		bytes := []byte(`{
-			"Services": [
-				{
-					"Proxy": {":3000": "localhost:4000"},
-					"Command": ["sleep", "1"],
-					"StopAfter": "10m",
-					"StopSignal": "INT",
-					"Timeout": "150ms",
-					"WaitAfterStart": "250ms"
-				},
-				{
-					"Command": ["sleep", "2"],
-					"Proxy": {":3001": "localhost:4001"},
-					"Timeout": "151ms",
-					"StopAfter": "11m",
-					"StopSignal": "TERM",
-					"WaitAfterStart": "251ms"
-				}
-			]
-		}`)
-		assertValidJSON(t, bytes)
-		assertFileParsed(t, bytes, true)
-	})
-}
-
 func assertValidJSON(t *testing.T, bytes []byte) {
 	var obj Config
 	err := json.Unmarshal(bytes, &obj)
@@ -74,6 +30,7 @@ func TestParseConfigYaml(t *testing.T) {
 		assertValidJSON(t, bytes)
 		assertFileParsed(t, bytes, false)
 	})
+
 	t.Run("minimal yaml", func(t *testing.T) {
 		assertFileParsed(t, []byte(`---
 services:
