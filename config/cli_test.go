@@ -10,7 +10,6 @@ import (
 )
 
 func TestLoadNoArgs(t *testing.T) {
-	listenAddress = ""
 	proxySpec = ""
 	cfg, err := Load([]string{})
 
@@ -24,7 +23,6 @@ func TestLoadNoArgs(t *testing.T) {
 }
 
 func TestLoadArgs(t *testing.T) {
-	listenAddress = ""
 	proxySpec = ":5000 localhost:5001 some:6001 some:7001"
 	timeout = 2 * time.Second
 	waitAfterStart = 500 * time.Millisecond
@@ -54,7 +52,6 @@ func TestLoadArgs(t *testing.T) {
 }
 
 func TestLoadProxySep(t *testing.T) {
-	listenAddress = ""
 	proxySep = "+"
 	proxySpec = ":5000+localhost:5001+some:6001+some:7001"
 	cfg, err := Load([]string{})
@@ -73,30 +70,7 @@ func TestLoadProxySep(t *testing.T) {
 	}
 }
 
-func TestLoadDeprecatedListen(t *testing.T) {
-	listenAddress = ":5008"
-	proxySpec = "localhost:5009"
-	cfg, err := Load([]string{"foo", "bar"})
-
-	if err != nil {
-		t.Errorf("got error: %s", err)
-	}
-
-	if len(cfg.Services) != 1 {
-		t.Fatalf("Service not configured from args")
-	}
-
-	svc := cfg.Services[0]
-	if len(svc.Proxy) != 1 || svc.Proxy[":5008"] != "localhost:5009" {
-		t.Errorf("Proxy incorrect: %q", svc.Proxy)
-	}
-	if fmt.Sprintf("%s", svc.Command) != "[foo bar]" {
-		t.Errorf("Command incorrect: %s", svc.Command)
-	}
-}
-
 func TestLoadOddProxy(t *testing.T) {
-	listenAddress = ""
 	tests := []string{"localhost:5001", ":5001 :5002 :5003"}
 
 	for _, val := range tests {
@@ -113,20 +87,7 @@ func TestLoadOddProxy(t *testing.T) {
 	}
 }
 
-func TestLoadOnlyListen(t *testing.T) {
-	listenAddress = ":5000"
-	proxySpec = ""
-	_, err := Load([]string{"foo", "bar"})
-
-	if err == nil {
-		t.Errorf("expected error, got none")
-	} else if err.Error() != "-proxy is required" {
-		t.Errorf("unexpected error: %s", err)
-	}
-}
-
 func TestLoadNoProxy(t *testing.T) {
-	listenAddress = ""
 	proxySpec = ""
 	_, err := Load([]string{"foo", "bar"})
 
@@ -138,7 +99,6 @@ func TestLoadNoProxy(t *testing.T) {
 }
 
 func TestLoadConfigFile(t *testing.T) {
-	listenAddress = ""
 	proxySpec = ""
 
 	tmpfile, err := ioutil.TempFile("", "ynetdjson")
@@ -186,7 +146,6 @@ func TestLoadConfigFile(t *testing.T) {
 }
 
 func TestLoadConfigFileError(t *testing.T) {
-	listenAddress = ""
 	proxySpec = ""
 
 	tmpfile, err := ioutil.TempFile("", "ynetdjson")

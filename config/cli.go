@@ -3,12 +3,10 @@ package config
 import (
 	"flag"
 	"fmt"
-	"os"
 	"strings"
 )
 
 var configfile string
-var listenAddress string
 var proxySep = " "
 var proxySpec string
 var timeout = DefaultTimeout
@@ -34,9 +32,6 @@ func init() {
 	flag.DurationVar(&stopAfter, "stop-after", stopAfter, stopAfterUsage)
 	flag.StringVar(&stopSignal, "stop-signal", stopSignal, stopSignalUsage)
 
-	flag.StringVar(&listenAddress, "listen", "", listenUsage)
-	flag.StringVar(&listenAddress, "l", "", listenUsage+" (shorthand)")
-
 	flag.StringVar(&proxySep, "proxy-sep", proxySep, proxyUsage)
 	flag.StringVar(&proxySep, "ps", proxySep, proxyUsage+" (shorthand)")
 
@@ -61,14 +56,7 @@ func Load(args []string) (cfg Config, err error) {
 	}
 
 	proxy := make(map[string]string)
-	if listenAddress != "" {
-		fmt.Fprintln(os.Stderr, "-listen is deprecated.  Use -proxy 'from:port to:port'")
-		if proxySpec == "" {
-			err = fmt.Errorf("-proxy is required")
-			return
-		}
-		proxy[listenAddress] = proxySpec
-	} else if proxySpec != "" {
+	if proxySpec != "" {
 		addrs := strings.Split(proxySpec, proxySep)
 		if len(addrs)%2 != 0 {
 			err = fmt.Errorf("-proxy must contain pairs of addresses: \"from1 to1 from2 to2\"")
