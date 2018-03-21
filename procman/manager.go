@@ -46,7 +46,7 @@ func (m *ProcessManager) launch(proc *Process) *exec.Cmd {
 	cmd := exec.Command(proc.argv[0], proc.argv[1:]...)
 	prepareCommand(cmd)
 
-	logger.Printf("starting: %s", proc)
+	logger.Printf("starting: %s", proc.argv)
 
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -115,7 +115,7 @@ func (m *ProcessManager) Manage() {
 
 		case proc := <-m.stopper:
 			if proc.cmd != nil {
-				logger.Printf("stopping %s", proc.argv)
+				logger.Printf("stopping: %s", proc.argv)
 				if err := proc.signal(proc.stopSignal); err != nil {
 					logger.Printf("signal error: %s", err)
 				}

@@ -23,7 +23,7 @@ load helpers
 
     ! running ytester
 
-    ylog | grep 'stopping ' | lines $i
+    ylog | grep 'stopping: ' | lines $i
   }
 }
 
@@ -54,7 +54,7 @@ load helpers
 
     ! running ytester
 
-    ylog | grep 'stopping ' | lines $i
+    ylog | grep 'stopping: ' | lines $i
     last="$current"
   }
 }
