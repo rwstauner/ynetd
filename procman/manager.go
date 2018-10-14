@@ -37,7 +37,7 @@ func (m *ProcessManager) Process(cfg config.Service) *Process {
 	return &Process{
 		argv:           cfg.Command,
 		manager:        m,
-		stopSignal:     getSignal(cfg.StopSignal, syscall.SIGINT),
+		stopSignal:     getSignal(cfg.StopSignal, syscall.SIGTERM),
 		waitAfterStart: config.ParseDuration(cfg.WaitAfterStart, config.DefaultWaitAfterStart),
 	}
 }

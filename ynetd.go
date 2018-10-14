@@ -23,7 +23,12 @@ var logger = log.New(os.Stdout, "ynetd ", log.Ldate|log.Ltime|log.Lmicroseconds)
 func setupSignals(pm *procman.ProcessManager) {
 	channel := make(chan os.Signal, 1)
 
-	signal.Notify(channel, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM)
+	signals := []os.Signal{syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM}
+	for _, sig := range signals {
+		if !signal.Ignored(sig) {
+			signal.Notify(channel, sig)
+		}
+	}
 
 	pm.Signal(<-channel)
 }

@@ -86,7 +86,7 @@ ysend () {
 close () {
   if [[ -n "$YPID" ]]; then
     # Don't count these exit statuses as errors.
-    kill -s INT $YPID || :
+    kill $YPID || :
     wait $YPID || :
   fi
   YPID=

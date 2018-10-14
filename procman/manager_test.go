@@ -8,8 +8,6 @@ import (
 	"github.com/rwstauner/ynetd/config"
 )
 
-var stopSignal = syscall.SIGINT
-
 func TestProcess(t *testing.T) {
 	pm := New()
 	proc := pm.Process(config.Service{Command: []string{"foo", "bar"}})
@@ -20,7 +18,7 @@ func TestProcess(t *testing.T) {
 	if proc.manager != pm {
 		t.Errorf("who dis?")
 	}
-	if proc.stopSignal != syscall.SIGINT {
+	if proc.stopSignal != syscall.SIGTERM {
 		t.Errorf("incorrect stop signal: %s", proc.stopSignal)
 	}
 }
@@ -29,13 +27,13 @@ func TestProcessStopSignal(t *testing.T) {
 	pm := New()
 	proc := pm.Process(config.Service{
 		Command:    []string{"siggy"},
-		StopSignal: "TERM",
+		StopSignal: "INT",
 	})
 
 	if fmt.Sprintf("%s", proc.argv) != "[siggy]" {
 		t.Errorf("Unexpected argv: %s", proc.argv)
 	}
-	if proc.stopSignal != syscall.SIGTERM {
+	if proc.stopSignal != syscall.SIGINT {
 		t.Errorf("incorrect stop signal: %s", proc.stopSignal)
 	}
 }
