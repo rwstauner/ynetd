@@ -16,6 +16,8 @@ DOCKER_VARS  = -e TESTS="$(TESTS)"
 DOCKER_RUN   = docker run --rm -v $(PWD)/tmp/gosrc:/go/src -v $(PWD):$(SRC_VOL) -w $(SRC_VOL) $(DOCKER_VARS) $(DOCKER_IMAGE)
 DOCKER_MAKE  = $(DOCKER_RUN) make
 
+CLI_DEP = if ! which $(1); then go get $(2); fi
+
 PACKAGE_DIRS = $(shell find -name '*_test.go' -a -not -path './tmp/*' | sed -r 's,[^/]+$$,,' | sort | uniq)
 
 .PHONY: all build test
@@ -37,11 +39,8 @@ gotest:
 	go test $(PACKAGE_DIRS)
 
 deps:
-	go get -u \
-		github.com/mitchellh/gox \
-		golang.org/x/lint/golint \
-	&& true
-
+	$(call CLI_DEP,gox,github.com/mitchellh/gox)
+	$(call CLI_DEP,golint,golang.org/x/lint/golint)
 
 test_build: deps
 	go get
