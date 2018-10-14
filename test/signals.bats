@@ -11,6 +11,7 @@ ystate () {
   running ynetd
   ! running ytester
   kill -s INT $YPID
+  sleep 1 # With -race this takes slightly longer.
   ! running ynetd
 }
 
