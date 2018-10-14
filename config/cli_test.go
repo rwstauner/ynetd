@@ -189,28 +189,28 @@ func TestLoadStopAfter(t *testing.T) {
 
 	t.Run("default", func(t *testing.T) {
 		stopAfter = 0
-		stopSignal = "INT"
+		stopSignal = "TERM"
 
 		svc := setup(t)
 
 		if svc.StopAfter != "0s" {
 			t.Errorf("incorrect StopAfter: %q", svc.StopAfter)
 		}
-		if svc.StopSignal != "INT" {
+		if svc.StopSignal != "TERM" {
 			t.Errorf("incorrect StopAfter: %q", svc.StopSignal)
 		}
 	})
 
 	t.Run("custom", func(t *testing.T) {
 		stopAfter = 200 * time.Millisecond
-		stopSignal = "TERM"
+		stopSignal = "INT"
 
 		svc := setup(t)
 
 		if svc.StopAfter != "200ms" {
 			t.Errorf("incorrect StopAfter: %q", svc.StopAfter)
 		}
-		if svc.StopSignal != "TERM" {
+		if svc.StopSignal != "INT" {
 			t.Errorf("incorrect StopAfter: %q", svc.StopSignal)
 		}
 	})

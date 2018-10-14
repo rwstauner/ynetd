@@ -6,12 +6,15 @@ import (
 	"log"
 	"net"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
 var (
 	after      = 0 * time.Millisecond
 	before     = 0 * time.Millisecond
+	intIgnored = false
 	knock      = false
 	loop       = false
 	port       = ""
@@ -27,6 +30,7 @@ func init() {
 	flag.DurationVar(&before, "before", before, "before")
 	flag.BoolVar(&knock, "knock", knock, "knock")
 	flag.BoolVar(&loop, "loop", loop, "loop")
+	flag.BoolVar(&intIgnored, "int-ignored", intIgnored, "int-ignored")
 	flag.StringVar(&port, "port", port, "port")
 	flag.StringVar(&send, "send", send, "send")
 	flag.StringVar(&serve, "serve", serve, "serve")
@@ -80,14 +84,16 @@ func frd() int {
 	time.Sleep(before)
 
 	switch {
+	case intIgnored:
+		flog("int ignored: %t", signal.Ignored(syscall.SIGINT))
 	case knock:
-		flog("knocking %d", port)
+		flog("knocking %s", port)
 		net.Dial("tcp", "localhost:"+port)
 	case send != "":
 		c := make(chan net.Conn)
 		go func() {
 			for {
-				flog("dialing %d", port)
+				flog("dialing %s", port)
 				conn, err := net.DialTimeout("tcp", "localhost:"+port, timeout)
 				if err == nil {
 					c <- conn

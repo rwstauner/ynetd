@@ -1,3 +1,10 @@
+# v0.10 (2018-10-14)
+
+- Use SIGTERM as default stop signal.
+- Do not handle signals that are already ignored
+  (for example: SIGINT when not run in the foreground).
+- Make starting/stopping output simpler and more consistent.
+
 # v0.9 (2018-03-19)
 
 - Remove deprecated -listen option

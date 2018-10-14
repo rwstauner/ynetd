@@ -36,7 +36,7 @@ load helpers
 
   is $((end - start)) -lt 2
 
-  kill -s INT `ypidof ytester`
+  kill `ypidof ytester`
   ! running ytester
 
   # Each new start should wait.

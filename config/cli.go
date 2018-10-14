@@ -11,7 +11,7 @@ var proxySep = " "
 var proxySpec string
 var timeout = DefaultTimeout
 var stopAfter = DefaultStopAfter
-var stopSignal = "INT"
+var stopSignal = "TERM"
 var waitAfterStart = DefaultWaitAfterStart
 
 func init() {

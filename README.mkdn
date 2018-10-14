@@ -43,7 +43,7 @@ One service can be configured on the command line:
     -proxy            # Address pairs to listen on/proxy to ("from:port to:port from2 to2")
     -proxy-sep        # Alternate character to separate proxy addresses
     -stop-after       # Duration after last connection to signal command to stop
-    -stop-signal      # Signal to send to command (default it INT)
+    -stop-signal      # Signal to send to command (default is TERM)
     -timeout          # Duration to wait before aborting connection
     -wait-after-start # Duration to wait after starting command before forwarding connections
     args...           # Command to run
