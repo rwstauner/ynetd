@@ -6,6 +6,8 @@ VERSION_VAR = main.Version
 VERSION = $(shell git describe --tags --long --always --match 'v[0-9]*' | sed -e 's/-/./')
 BUILD_ARGS = -tags netgo -ldflags '-w -extldflags "-static" -X $(VERSION_VAR)=$(VERSION)'
 
+TEST_BUILD_ARGS = $(shell test -s /etc/alpine-release || echo "-race")
+
 TESTS ?= test
 
 SRC_VOL = /go/src/$(IMPORT_PATH)
@@ -19,24 +21,37 @@ PACKAGE_DIRS = $(shell find -name '*_test.go' -a -not -path './tmp/*' | sed -r '
 .PHONY: all build test
 all: build
 
-build:
-	$(DOCKER_MAKE) _build
-_build: _test
+dbuild:
+	$(DOCKER_MAKE) build
+
+build: test build_frd
+
+build_frd: deps
 	gox $(BUILD_ARGS) -output "build/ynetd-{{.OS}}-{{.Arch}}/ynetd" -verbose
 	(cd build && for i in ynetd-*/; do (cd $$i && zip "../$${i%/}.zip" ynetd*); done)
+
+install:
+	go install $(BUILD_ARGS)
 
 gotest:
 	go test $(PACKAGE_DIRS)
 
-_test_build:
+deps:
+	go get -u \
+		github.com/mitchellh/gox \
+		golang.org/x/lint/golint \
+	&& true
+
+
+test_build: deps
 	go get
 	golint -set_exit_status $(PACKAGE_DIRS)
 	go vet $(PACKAGE_DIRS)
 	go test $(PACKAGE_DIRS)
-	go build $(BUILD_ARGS) -o build/ynetd
+	go build $(TEST_BUILD_ARGS) $(BUILD_ARGS) -o build/ynetd
 	go build -o build/ytester test/ytester.go
 
-test:
-	$(DOCKER_MAKE) _test
-_test: _test_build
+dtest:
+	$(DOCKER_MAKE) test
+test: test_build
 	YNETD=build/ynetd YTESTER=build/ytester bats $(TESTS)
