@@ -35,6 +35,12 @@ or use something like this:
       && unzip -d /usr/local/bin/ /tmp/ynetd.zip \
       && rm -f /tmp/ynetd.zip
 
+### Homebrew
+
+Install via [homebrew](https://brew.sh):
+
+    brew tap rwstauner/ynetd
+    brew install ynetd
 
 ## Configuration
 
