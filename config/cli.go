@@ -32,8 +32,8 @@ func init() {
 	flag.DurationVar(&stopAfter, "stop-after", stopAfter, stopAfterUsage)
 	flag.StringVar(&stopSignal, "stop-signal", stopSignal, stopSignalUsage)
 
-	flag.StringVar(&proxySep, "proxy-sep", proxySep, proxyUsage)
-	flag.StringVar(&proxySep, "ps", proxySep, proxyUsage+" (shorthand)")
+	flag.StringVar(&proxySep, "proxy-sep", proxySep, proxySepUsage)
+	flag.StringVar(&proxySep, "ps", proxySep, proxySepUsage+" (shorthand)")
 
 	flag.StringVar(&proxySpec, "proxy", "", proxyUsage)
 	flag.StringVar(&proxySpec, "p", "", proxyUsage+" (shorthand)")
