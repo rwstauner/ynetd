@@ -26,11 +26,17 @@ all: build
 dbuild:
 	$(DOCKER_MAKE) build
 
-build: test build_frd
+build: clean test build_frd
+
+build_one: ytester
+	go build $(BUILD_ARGS) -o build/ynetd
 
 build_frd: deps
 	gox $(BUILD_ARGS) -output "build/ynetd-{{.OS}}-{{.Arch}}/ynetd" -verbose
 	(cd build && for i in ynetd-*/; do (cd $$i && zip "../$${i%/}.zip" ynetd*); done)
+
+clean:
+	rm -rf build
 
 install:
 	go install $(BUILD_ARGS)
@@ -42,12 +48,14 @@ deps:
 	$(call CLI_DEP,gox,github.com/mitchellh/gox)
 	$(call CLI_DEP,golint,golang.org/x/lint/golint)
 
-test_build: deps
+test_build: deps ytester
 	go get
 	golint -set_exit_status $(PACKAGE_DIRS)
 	go vet $(PACKAGE_DIRS)
 	go test $(PACKAGE_DIRS)
 	go build $(TEST_BUILD_ARGS) $(BUILD_ARGS) -o build/ynetd
+
+ytester:
 	go build -o build/ytester test/ytester.go
 
 dtest:
