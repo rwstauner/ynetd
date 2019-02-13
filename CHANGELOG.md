@@ -1,3 +1,7 @@
+# UNRELEASED
+
+- Wait until all clients disconnect before starting any "stop-after" timers.
+
 # v0.10 (2018-10-14)
 
 - Use SIGTERM as default stop signal.

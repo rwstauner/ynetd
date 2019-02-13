@@ -16,10 +16,11 @@ type Service struct {
 	StopAfter time.Duration
 }
 
-func forward(src *net.TCPConn, dst *net.TCPConn) {
+func forward(src *net.TCPConn, dst *net.TCPConn, done chan bool) {
 	defer src.CloseRead()
 	defer dst.CloseWrite()
 	io.Copy(dst, src)
+	done <- true
 }
 
 func dialWithRetries(network string, address string, timeout time.Duration) (conn net.Conn, err error) {
@@ -39,7 +40,7 @@ func dialWithRetries(network string, address string, timeout time.Duration) (con
 	}
 }
 
-func (s *Service) handleConnection(src *net.TCPConn, dst string) {
+func (s *Service) handleConnection(src *net.TCPConn, dst string, done chan bool) {
 	if s.Command != nil {
 		s.Command.LaunchOnce()
 	}
@@ -55,8 +56,14 @@ func (s *Service) handleConnection(src *net.TCPConn, dst string) {
 	src.SetKeepAlivePeriod(60 * time.Second)
 
 	fwd := conn.(*net.TCPConn)
-	go forward(src, fwd)
-	forward(fwd, src)
+	c := make(chan bool, 2)
+	go forward(src, fwd, c)
+	go forward(fwd, src, c)
+	// Wait for input and output to close.
+	<-c
+	<-c
+
+	done <- true
 }
 
 func (s *Service) shouldStop() bool {
@@ -93,28 +100,38 @@ func (s *Service) proxy(src string, dst string) error {
 		var stopTimeChan <-chan time.Time
 		var stopTimer *time.Timer
 		stopped := false
+		clientFinished := make(chan bool)
+		clients := 0
 
 		for {
 			select {
 			case conn := <-conns:
-				go s.handleConnection(conn, dst)
-				if s.shouldStop() {
+				// Stop any previous timer as soon as a connection is made.
+				if stopTimer != nil {
+					if !stopTimer.Stop() {
+						// If the timer expired when we didn't handle it.
+						if !stopped {
+							<-stopTimer.C // drain
+						}
+					}
+					stopped = true
+				}
+				clients++
+				go s.handleConnection(conn, dst, clientFinished)
+
+			case <-clientFinished:
+				clients--
+				// If configured to stop and all clients have finished, (re)start timer.
+				if s.shouldStop() && clients == 0 {
 					if stopTimer == nil {
 						stopTimer = time.NewTimer(s.StopAfter)
 						stopTimeChan = stopTimer.C
 					} else {
-						if !stopTimer.Stop() {
-							// If the timer expired when we didn't handle it.
-							if !stopped {
-								<-stopTimer.C // drain
-							}
-						}
-						// TODO: We should probably reset this when a connection closes
-						// rather than when it opens.
 						stopTimer.Reset(s.StopAfter)
 					}
 					stopped = false
 				}
+
 			case <-stopTimeChan:
 				stopped = true
 				s.Command.Stop()

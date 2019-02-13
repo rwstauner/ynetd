@@ -14,6 +14,7 @@ import (
 var (
 	after      = 0 * time.Millisecond
 	before     = 0 * time.Millisecond
+	delay      = 0 * time.Second
 	intIgnored = false
 	knock      = false
 	loop       = false
@@ -28,6 +29,7 @@ var (
 func init() {
 	flag.DurationVar(&after, "after", after, "after")
 	flag.DurationVar(&before, "before", before, "before")
+	flag.DurationVar(&delay, "delay", delay, "delay")
 	flag.BoolVar(&knock, "knock", knock, "knock")
 	flag.BoolVar(&loop, "loop", loop, "loop")
 	flag.BoolVar(&intIgnored, "int-ignored", intIgnored, "int-ignored")
@@ -62,13 +64,22 @@ func listen(addr string) {
 			continue
 		}
 
-		flog("serving: %s", msg)
-		conn.Write([]byte(msg + "\n"))
-		conn.Close()
+		handler := func() {
+			flog("serving: %s", msg)
+			// Block until EOF.
+			b := make([]byte, 255)
+			conn.Read(b)
 
-		time.Sleep(after)
+			conn.Write([]byte(msg + "\n"))
+			conn.Close()
+
+			time.Sleep(after)
+		}
 		if !loop {
+			handler()
 			break
+		} else {
+			go handler()
 		}
 	}
 }
@@ -105,7 +116,11 @@ func frd() int {
 		select {
 		case conn := <-c:
 			flog("sending: %s", send)
-			conn.Write([]byte(send + "\n"))
+			conn.Write([]byte(send))
+			if delay > 0 {
+				time.Sleep(delay)
+			}
+			conn.Write([]byte("\n"))
 			io.Copy(os.Stdout, conn)
 			conn.Close()
 		case <-time.After(timeout):
