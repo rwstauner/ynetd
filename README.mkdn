@@ -25,7 +25,51 @@ them available when needed, just put `ynetd` in front of them.
 RAM usage for each container is now only 500K but the services will vivify
 automatically if a request to them is made.
 
+
+## Features
+
+- Lazily load a service and forward all connections.
+
+  Since it starts quickly, you don't need to configure clients to check and see
+  if the port is listening, just connect and it will hold the connection until
+  the service is ready.
+
+- Stop the service after a period of inactivity.
+
+  When the last client disconnects, wait the specified period of time, and shut
+  it down.  Reclaim those resources when you're done!
+
+- Watch for the service to exit and restart it next time it is needed.
+
+  This is additionally handy for services that crash,
+  whether they throw exceptions, or are sacrificed by the OOM killer.
+  No manual restarts (or inifinite loop wrappers) required.
+
+- Wait longer for a service to start.
+
+  Some services may open their port before really being ready to use
+  (especially if they have their own child services).
+  Configure an additional period to wait after starting the service before
+  forwarding any traffic.
+  Clients don't need to know they have to wait, they can connect instantly
+  and the traffic will forward when ready.
+
+- Forward multiple ports.
+
+  If a service listens on multiple ports,
+  it can listen to and forward all of them.
+
+- Forward port traffic to another host.
+
+  It can be run without a command specified and will simply forward the traffic.
+  This can be a simpler alternative to using `iptables` or `netsh`
+  since it requires no additional dependencies or special privileges and doesn't
+  involve permanent system configuration.
+
+
 ## Installation
+
+### Universal
 
 Download the zip file for your OS from the [releases](https://github.com/rwstauner/ynetd/releases) page
 or use something like this:
@@ -66,13 +110,13 @@ Which should look something like:
       -
         proxy:
           ":5000": "localhost:5001"
-          ":6543": "localhost:7654"
+          "localhost:6543": "localhost:7654"
         command:
           - run
           - some
-          - server
+          - service
         stop_after: 10m
-        stop_signal: TERM
+        stop_signal: INT
         timeout: 10s
         wait_after_start: 2s
 
@@ -101,7 +145,7 @@ to avoid having to use additional port numbers:
 
 ## Why the name?
 
-I wanted something like `xinted` but something that would launch
+I wanted something like `xinetd` but something that would launch
 another (long running) server and just forward connections.
 
 - "y" comes after "x"
