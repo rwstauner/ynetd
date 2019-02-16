@@ -69,22 +69,33 @@ automatically if a request to them is made.
 
 ## Installation
 
-### Universal
-
-Download the zip file for your OS from the [releases](https://github.com/rwstauner/ynetd/releases) page
-or use something like this:
-
-    YNETD_VERSION=v0.10
-    wget -qO /tmp/ynetd.zip https://github.com/rwstauner/ynetd/releases/download/$YNETD_VERSION/ynetd-linux-amd64.zip \
-      && unzip -d /usr/local/bin/ /tmp/ynetd.zip \
-      && rm -f /tmp/ynetd.zip
-
 ### Homebrew
 
 Install via [homebrew](https://brew.sh):
 
     brew tap rwstauner/ynetd
     brew install ynetd
+
+### Universal
+
+Download the zip file for your OS from the [releases](https://github.com/rwstauner/ynetd/releases) page
+or use something like this:
+
+    YNETD_VERSION=v0.11
+    wget -qO /tmp/ynetd.zip https://github.com/rwstauner/ynetd/releases/download/$YNETD_VERSION/ynetd-linux-amd64.zip \
+      && unzip -d /usr/local/bin/ /tmp/ynetd.zip \
+      && rm -f /tmp/ynetd.zip
+
+To verify the signature of the zip files:
+
+    YNETD_VERSION=v0.11
+    url=https://github.com/rwstauner/ynetd/releases/download/$YNETD_VERSION/ynetd-linux-amd64.zip \
+      && wget -qO /tmp/ynetd.zip $url \
+      && wget -qO /tmp/ynetd.zip.asc $url.asc \
+      && gpg --no-tty --batch --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 9791707D75D1474B6936CA216AD6ED6EA9371AED \
+      && gpg --no-tty --batch --verify /tmp/ynetd.zip.asc /tmp/ynetd.zip \
+      && unzip -d /usr/local/bin/ /tmp/ynetd.zip \
+      && rm -f /tmp/ynetd.zip /tmp/ynetd.zip.asc
 
 ## Configuration
 

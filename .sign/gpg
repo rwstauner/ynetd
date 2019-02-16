@@ -1,0 +1,12 @@
+#!/bin/bash
+
+at-least () {
+  v=`gpg --version | head -n1 | grep -Eo '(\d+)\.(\d+)'`
+  [[ ${v%.*} -ge ${1%.*} ]] && [[ ${v#*.} -ge ${1#*.} ]]
+}
+
+if at-least 2.2 && [[ "$*" = *--passphrase-fd* ]]; then
+  set -- --pinentry-mode loopback "$@"
+fi
+
+exec gpg "$@"

@@ -3,12 +3,19 @@ language: go
 go:
   - 1.x
 
+env:
+  global:
+    - secure: "m2qyhya5/pF/ChgOUgtkkFW/hcuPt0Z1yyIBHNNh3RIbktR59cyF8WZ+CsyTcUQSq3WjeyoHJuxA6id2ka7yEbOKCIxPkd6blWbwpHtz1tGtoIMX31XOPP9r7KhNbSe8TUPPEtOsXmfFoqEwJtVKKDKwCxv7C+0oRMo45foivUqmFR1rtO4L4pSCiitrlNUFe9VPpQrOZJR+NQ2WQMZqzOic9saqAi9XoF4RGjOO3TK/c/CRF8GMlkvoRokqkMx5Fm+X4hSU0XmMvPfXSGwcWir/moXjqssnAmUMBfeK8osWPfzjjfLkaLMBe0lA9Ns0EVcP7PHrog4CEbOVBsa6DU2IYPBy+qy+utzL/ZbRwbgqdDEyEI+f9o0VxQg0ViifiYZ+dFXh1L86I4lO60z2eWdJUHOdyJ13fAXXIg1oZlpcKeeDNtQuE58zA/hD5K+p8jydohj0UbrEH0NAQdy+vzdPxgA7VVLPzDEGYYnwqD1p95IL9F50WWZEhwxvr3MNidH17Edj7H87SWg0S8V85dctgh12pw/kqslIvORCE0ZabCwCEN0/1R+fbC7mnA6wVFFn5z7GWt/abZNl2/ndgnRWW74TZaGTro9RMAjc7CTYCF/auaSQFliDEO+YRVxfCKCL4qKJzgd8O9x0YWq7Vn//zYabSvwQjSPEHHjtcpI="
+
+before_install:
+  - openssl aes-256-cbc -K $encrypted_83d0e6207949_key -iv $encrypted_83d0e6207949_iv -in .sign/key.enc -out .sign/key -d || echo "failed to decrypt signing key"
+
 deploy:
   provider: releases
   api_key:
     secure: imfKYXxxTd0+RSGulQ4a5gaFuTX+HYS1jHXagL8WI/a4H8wGPtEGV2BNfq43PGOhngojiGLOIpaTNSWc8hmW6mVnZXi37QSe4ehOuBDzrD7pPyuK1KMQlejBFLqDV97h8FgV0NQmkSSc9pQ+Ij4ObjBPvT3Ej4suZ3I56/8bj4dkjBmDcGw6zoaWF8PvcyuH68XgSsOp6DKjjLFBK7dxkjt3Rv844Yxvcrm1Xgfp1wIrrhwtmGx5KhakgKpXmzKlag1Xg4HtopXHaMuxgjiPh1P8rYuZ8ePvAZHh93WzxL3pdWAoLipl3Cm1jSbTRkbctFIL+G62Seqx/ZjBEznGOCYHXiWKnZvKT55rswt5i/KK2RCW27/V/Hu0pFvlk4y/dbC3YKbTKX4NHQXLkhx89SmoYlulSEnhrElyN01yu65miK8tZLUKlhJ7kAEoOaJWhwZ/kvrkhd8eZcNaWm29gRxpfYuTAR4MvAMqtqeGqZ9+OItHPTHxJAtdVdwFr787fh424xLFsfOJ8E8TsZWh8OLIFHLsvXp1NGrAXdP3etfRIDuUWgUcDNWNC0L8ta+S1wEUgDdqPmWA1LtQ9qf0kLfkSv/pF+xl2dm2qIaSBdLpIPbmxJaj1vp1ELuIiKLWpGHwvCcJ5w6D4XFa59pgzBX7HAh/1lNAXsT3hbHrb9Y=
   file_glob: true
-  file: build/ynetd*.zip
+  file: build/ynetd*.zip*
   skip_cleanup: true
   on:
     tags: true
