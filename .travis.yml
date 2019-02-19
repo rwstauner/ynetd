@@ -16,6 +16,7 @@ deploy:
     secure: imfKYXxxTd0+RSGulQ4a5gaFuTX+HYS1jHXagL8WI/a4H8wGPtEGV2BNfq43PGOhngojiGLOIpaTNSWc8hmW6mVnZXi37QSe4ehOuBDzrD7pPyuK1KMQlejBFLqDV97h8FgV0NQmkSSc9pQ+Ij4ObjBPvT3Ej4suZ3I56/8bj4dkjBmDcGw6zoaWF8PvcyuH68XgSsOp6DKjjLFBK7dxkjt3Rv844Yxvcrm1Xgfp1wIrrhwtmGx5KhakgKpXmzKlag1Xg4HtopXHaMuxgjiPh1P8rYuZ8ePvAZHh93WzxL3pdWAoLipl3Cm1jSbTRkbctFIL+G62Seqx/ZjBEznGOCYHXiWKnZvKT55rswt5i/KK2RCW27/V/Hu0pFvlk4y/dbC3YKbTKX4NHQXLkhx89SmoYlulSEnhrElyN01yu65miK8tZLUKlhJ7kAEoOaJWhwZ/kvrkhd8eZcNaWm29gRxpfYuTAR4MvAMqtqeGqZ9+OItHPTHxJAtdVdwFr787fh424xLFsfOJ8E8TsZWh8OLIFHLsvXp1NGrAXdP3etfRIDuUWgUcDNWNC0L8ta+S1wEUgDdqPmWA1LtQ9qf0kLfkSv/pF+xl2dm2qIaSBdLpIPbmxJaj1vp1ELuIiKLWpGHwvCcJ5w6D4XFa59pgzBX7HAh/1lNAXsT3hbHrb9Y=
   file_glob: true
   file: build/ynetd*.zip*
+  overwrite: true # Ensure the binaries match the signatures.
   skip_cleanup: true
   on:
     tags: true
