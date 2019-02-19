@@ -1,4 +1,4 @@
-# UNRELEASED
+# v0.11 (2019-02-19)
 
 - Wait until all clients disconnect before starting any "stop-after" timers.
 - Fix cli usage description for -proxy-sep.
