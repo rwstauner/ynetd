@@ -1,7 +1,5 @@
 SHELL = /bin/bash
 
-IMPORT_PATH = github.com/rwstauner/ynetd
-
 VERSION_VAR = main.Version
 VERSION = $(shell git describe --tags --long --always --match 'v[0-9]*' | sed -e 's/-/./')
 BUILD_ARGS = -tags netgo -ldflags '-w -extldflags "-static" -X $(VERSION_VAR)=$(VERSION)'
@@ -10,10 +8,10 @@ TEST_BUILD_ARGS = $(shell test -s /etc/alpine-release || echo "-race")
 
 TESTS ?= test
 
-SRC_VOL = /go/src/$(IMPORT_PATH)
+SRC_VOL = /src/
 DOCKER_IMAGE = rwstauner/golang-release
 DOCKER_VARS  = -e TESTS="$(TESTS)"
-DOCKER_RUN   = docker run --rm -v $(PWD)/tmp/gosrc:/go/src -v $(PWD):$(SRC_VOL) -w $(SRC_VOL) $(DOCKER_VARS) $(DOCKER_IMAGE)
+DOCKER_RUN   = docker run --rm -v $(PWD)/tmp/gopath:/go -v $(PWD):$(SRC_VOL) -w $(SRC_VOL) $(DOCKER_VARS) $(DOCKER_IMAGE)
 DOCKER_MAKE  = $(DOCKER_RUN) make
 
 GPG_TO_SIGN = "$$GPG_PREFIX/gpg" --homedir "$$GPG_PREFIX/home" --batch
@@ -24,7 +22,7 @@ PGP_FINGERPRINT=9791707D75D1474B6936CA216AD6ED6EA9371AED
 
 CLI_DEP = if ! which $(1); then go get $(2); fi
 
-PACKAGE_DIRS = $(shell find -name '*_test.go' -a -not -path './tmp/*' | sed -r 's,[^/]+$$,,' | sort | uniq)
+PACKAGE_DIRS = $(shell find -name '*_test.go' -a -not -path './tmp/*' | while read; do echo $${REPLY%/*}; done | sort | uniq)
 
 .PHONY: all build test
 all: build
