@@ -137,15 +137,32 @@ Without a command to run, ynetd can be used as a simple port forwarder:
 
     ynetd -proxy "localhost:5001 remote.host:8080"
 
-Addresses can be specified as "host:port", ":port" (all addresses)
-or as "interface:name:port" ("interface:eth0:5001") to listen on
-(all addresses of) the named interface.
+Addresses can be specified as:
+
+- "host:port"
+
+- ":port" (all addresses) (source)
+
+- "interface:name:port" ("interface:eth0:5001") to listen on
+(all addresses of) the named interface (source)
 
 This can be useful if you don't know the ip address up front
 but want to forward from public interface to loopback
 to avoid having to use additional port numbers:
 
     -proxy "interface:eth0:5000 localhost:5000"
+
+- "exec:/full/path/to/command" (destination)
+
+Useful to get the destination address dynamically from a command.
+It should print "host:port" on stdout and return zero.
+If the command exits non-zero the status and stderr of the command
+will be printed to stdout and the connection will be dropped.
+
+    -proxy "localhost:5000 exec:/usr/local/bin/current-tunnel-address"
+
+NOTE: You must specify a full path (must start with a slash).
+
 
 ## Why?
 

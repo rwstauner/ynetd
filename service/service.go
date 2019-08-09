@@ -1,8 +1,11 @@
 package service
 
 import (
+	"bytes"
 	"io"
 	"net"
+	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/rwstauner/ynetd/procman"
@@ -41,6 +44,21 @@ func dialWithRetries(network string, address string, timeout time.Duration) (con
 }
 
 func (s *Service) handleConnection(src *net.TCPConn, dst string, done chan bool) {
+	if dst[0:6] == "exec:/" {
+		var stdout, stderr bytes.Buffer
+		path := dst[5:len(dst)]
+		cmd := exec.Command(path)
+		cmd.Stdout = &stdout
+		cmd.Stderr = &stderr
+		err := cmd.Run()
+		dst = strings.TrimSpace(stdout.String())
+		if err != nil || dst == "" {
+			src.Close()
+			logger.Printf("failed to get address from %s (%s): %s", path, err.Error(), stderr.String())
+			return
+		}
+	}
+
 	if s.Command != nil {
 		s.Command.LaunchOnce()
 	}

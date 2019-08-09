@@ -1,3 +1,5 @@
+- Allow destination address to come from a command.
+
 # v0.11 (2019-02-19)
 
 - Wait until all clients disconnect before starting any "stop-after" timers.

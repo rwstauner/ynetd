@@ -1,0 +1,4 @@
+#!/bin/bash
+
+echo stderr stuff >&2
+exit 1
