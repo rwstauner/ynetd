@@ -38,6 +38,19 @@ func dialWithRetries(network string, address string, timeout time.Duration) (con
 			if conn, err = dialer.Dial(network, address); err == nil {
 				return
 			}
+			// Will retrying help?
+			if opErr, ok := err.(*net.OpError); ok {
+				if !opErr.Temporary() {
+					switch opErr.Err.(type) {
+					// Not for bad ports, etc.
+					case *net.AddrError, net.InvalidAddrError:
+						return
+					// Connection Refused (*os.SyscallError) also counts as Temporary,
+					// but that's precisely the error we want to retry.
+					default:
+					}
+				}
+			}
 			time.Sleep(100 * time.Millisecond)
 		}
 	}
