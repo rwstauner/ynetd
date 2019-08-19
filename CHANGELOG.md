@@ -1,3 +1,5 @@
+# v0.12 (2019-08-18)
+
 - Allow destination address to come from a command.
 - Don't retry connections for non-temporary address errors (missing port, etc).
 
