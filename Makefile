@@ -68,6 +68,7 @@ deps:
 	$(call CLI_DEP,golint,golang.org/x/lint/golint)
 
 build_test: deps ytester
+	go version
 	go get
 	golint -set_exit_status $(PACKAGE_DIRS)
 	go vet $(PACKAGE_DIRS)
