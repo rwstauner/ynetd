@@ -31,10 +31,7 @@ services:
       - "config2$YTAG"
     timeout: 4s
 YAML
-  assert_configuation "$tmp"
-}
 
-assert_configuation () {
   cat "$tmp" >&2
 
   ynetd -config "$tmp"
