@@ -2,6 +2,7 @@ package service
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"net"
 	"os/exec"
@@ -104,6 +105,10 @@ func (s *Service) shouldStop() bool {
 }
 
 func (s *Service) proxy(src string, dst string) error {
+	if dst == "" {
+		return fmt.Errorf("destination address is required")
+	}
+
 	ln, err := net.Listen("tcp", src)
 	if err != nil {
 		return err

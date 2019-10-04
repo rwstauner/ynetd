@@ -6,7 +6,14 @@ load helpers
   "$YNETD" | grep -q 'no services configured'
 }
 
-@test "bad destination address" {
+@test "no address" {
+  ynetd -proxy ":$LISTEN_PORT "
+  knock
+  # Should be instant, rather than timing out.
+  ylog | grep -qF -- "error starting listener: destination address is required"
+}
+
+@test "no port" {
   ynetd -proxy ":$LISTEN_PORT foobar"
   knock
   # Should be instant, rather than timing out.
