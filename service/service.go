@@ -45,8 +45,10 @@ func dialWithRetries(network string, address string, timeout time.Duration) (con
 					// Not for bad ports, etc.
 					case *net.AddrError, net.InvalidAddrError:
 						return
-					// Connection Refused (*os.SyscallError) also counts as Temporary,
-					// but that's precisely the error we want to retry.
+					// Some errors are not considered Temporary
+					// but are precisely the sort of errors we want to retry:
+					// - connection refused (*os.SyscallError)
+					// - no such host (*.netDNSError)
 					default:
 					}
 				}
@@ -57,7 +59,7 @@ func dialWithRetries(network string, address string, timeout time.Duration) (con
 }
 
 func (s *Service) handleConnection(src *net.TCPConn, dst string, done chan bool) {
-	if dst[0:6] == "exec:/" {
+	if len(dst) > 5 && dst[0:6] == "exec:/" {
 		var stdout, stderr bytes.Buffer
 		path := dst[5:len(dst)]
 		cmd := exec.Command(path)
