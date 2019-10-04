@@ -155,7 +155,10 @@ to avoid having to use additional port numbers:
 - "exec:/full/path/to/command" (destination)
 
 Useful to get the destination address dynamically from a command.
-It should print "host:port" on stdout and return zero.
+The command will receive the following arguments:
+- local address (host:port)
+- remote address (host:port)
+The command should print the destination "host:port" on stdout and return zero.
 If the command exits non-zero the status and stderr of the command
 will be printed to stdout and the connection will be dropped.
 

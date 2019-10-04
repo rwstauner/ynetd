@@ -1,3 +1,8 @@
+# v0.13 (2019-10-04)
+
+- Pass local and remote addresses to "exec:" commands.
+- Don't error for destination addresses of less than 5 characters.
+
 # v0.12 (2019-08-18)
 
 - Allow destination address to come from a command.

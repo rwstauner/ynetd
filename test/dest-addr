@@ -1,3 +1,10 @@
 #!/bin/bash
 
-echo "localhost:${PROXY_PORT:-62000}"
+# use same ip as request
+host="${1%:*}"
+if [[ -n "$host" ]]; then
+  echo "$host:${PROXY_PORT:-62000}"
+else
+  echo "args: ($1) ($2)" >&2
+  exit 1
+fi

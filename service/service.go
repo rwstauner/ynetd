@@ -63,7 +63,7 @@ func (s *Service) handleConnection(src *net.TCPConn, dst string, done chan bool)
 	if len(dst) > 5 && dst[0:6] == "exec:/" {
 		var stdout, stderr bytes.Buffer
 		path := dst[5:len(dst)]
-		cmd := exec.Command(path)
+		cmd := exec.Command(path, src.LocalAddr().String(), src.RemoteAddr().String())
 		cmd.Stdout = &stdout
 		cmd.Stderr = &stderr
 		err := cmd.Run()
