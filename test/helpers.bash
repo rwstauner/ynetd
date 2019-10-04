@@ -8,7 +8,7 @@ YNETD="${YNETD:-build/ynetd}"
 YTESTER="${YTESTER:-build/ytester}"
 YAS="${BASH_SOURCE[0]%/*}/as"
 
-logdir=tmp
+logdir=.tmp
 mkdir -p "$logdir"
 
 debug () {
