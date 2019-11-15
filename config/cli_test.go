@@ -181,7 +181,7 @@ func TestLoadStopAfter(t *testing.T) {
 		}
 
 		if len(cfg.Services) != 1 {
-			t.Fatalf("unexpected services: %q", cfg.Services)
+			t.Fatalf("unexpected services: %#v", cfg.Services)
 		}
 
 		return cfg.Services[0]
