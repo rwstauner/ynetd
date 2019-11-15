@@ -14,6 +14,7 @@ import (
 
 // Service represents a single service proxy.
 type Service struct {
+	AutoStart bool
 	Proxy     map[string]string
 	Command   *procman.Process
 	Timeout   time.Duration
@@ -140,6 +141,14 @@ func (s *Service) proxy(src string, dst string) error {
 		stopped := false
 		clientFinished := make(chan bool)
 		clients := 0
+
+		if s.Command != nil && s.AutoStart {
+			s.Command.LaunchOnce()
+			if s.shouldStop() {
+				stopTimer = time.NewTimer(s.StopAfter)
+				stopTimeChan = stopTimer.C
+			}
+		}
 
 		for {
 			select {

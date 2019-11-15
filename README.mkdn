@@ -101,6 +101,7 @@ To verify the signature of the zip files:
 
 One service can be configured on the command line:
 
+    -auto-start       # Start the command immediately
     -proxy            # Address pairs to listen on/proxy to ("from:port to:port from2 to2")
     -proxy-sep        # Alternate character to separate proxy addresses
     -stop-after       # Duration after last connection to signal command to stop
@@ -119,6 +120,7 @@ Which should look something like:
     ---
     services:
       -
+        auto_start: true
         proxy:
           ":5000": "localhost:5001"
           "localhost:6543": "localhost:7654"

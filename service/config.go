@@ -13,6 +13,7 @@ func New(c config.Service, pm *procman.ProcessManager) (svc *Service, err error)
 		}
 	}()
 	svc = &Service{
+		AutoStart: c.AutoStart,
 		Proxy:     c.Proxy,
 		Command:   pm.Process(c),
 		Timeout:   config.ParseDuration(c.Timeout, config.DefaultTimeout),

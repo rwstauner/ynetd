@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+var autoStart bool
 var configfile string
 var proxySep = " "
 var proxySpec string
@@ -16,6 +17,7 @@ var waitAfterStart = DefaultWaitAfterStart
 
 func init() {
 	const (
+		autoStartUsage      = "Start service immediately when ynetd starts"
 		configUsage         = "Path to configuration file"
 		listenUsage         = "Address to listen on (deprecated)"
 		proxySepUsage       = "Separator character for -proxy"
@@ -25,6 +27,8 @@ func init() {
 		stopSignalUsage     = "Signal to send to stop"
 		waitAfterStartUsage = "Duration of time to wait while command starts before forwarding"
 	)
+
+	flag.BoolVar(&autoStart, "auto-start", autoStart, autoStartUsage)
 
 	flag.StringVar(&configfile, "config", "", configUsage)
 	flag.StringVar(&configfile, "c", "", configUsage+" (shorthand)")
@@ -77,6 +81,7 @@ func Load(args []string) (cfg Config, err error) {
 
 	if len(proxy) > 0 {
 		cfg.Services = append(cfg.Services, Service{
+			AutoStart:      autoStart,
 			Proxy:          proxy,
 			Command:        args,
 			Timeout:        timeout.String(),

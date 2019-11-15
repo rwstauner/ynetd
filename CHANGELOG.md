@@ -1,3 +1,6 @@
+- Add --auto-start to immediately start the command
+  (which will then be stopped according to stop-after, etc).
+
 # v0.13 (2019-10-04)
 
 - Pass local and remote addresses to "exec:" commands.
