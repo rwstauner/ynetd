@@ -1,3 +1,5 @@
+# v0.14 (2019-12-23)
+
 - Add --auto-start to immediately start the command
   (which will then be stopped according to stop-after, etc).
 
