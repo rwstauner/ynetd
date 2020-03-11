@@ -77,7 +77,11 @@ func (s *Service) handleConnection(src *net.TCPConn, dst string, done chan bool)
 	}
 
 	if s.Command != nil {
-		s.Command.LaunchOnce()
+		ok := s.Command.LaunchOnce()
+		if !ok {
+			src.Close()
+			return
+		}
 	}
 
 	conn, err := dialWithRetries("tcp", dst, s.Timeout)
@@ -143,8 +147,8 @@ func (s *Service) proxy(src string, dst string) error {
 		clients := 0
 
 		if s.Command != nil && s.AutoStart {
-			s.Command.LaunchOnce()
-			if s.shouldStop() {
+			ok := s.Command.LaunchOnce()
+			if ok && s.shouldStop() {
 				stopTimer = time.NewTimer(s.StopAfter)
 				stopTimeChan = stopTimer.C
 			}

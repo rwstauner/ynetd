@@ -24,11 +24,11 @@ type launchRequest struct {
 }
 
 // LaunchOnce launches the process if it isn't already running.
-func (p *Process) LaunchOnce() {
-	ready := make(chan bool)
+func (p *Process) LaunchOnce() bool {
+	ready := make(chan bool, 1)
 	req := &launchRequest{process: p, ready: ready}
 	p.manager.launcher <- req
-	<-ready
+	return <-ready
 }
 
 // Stop sends the configured signal to the process.

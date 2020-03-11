@@ -1,3 +1,8 @@
+# v0.15 Unreleased
+
+- Close connection immediately and print warning if command fails to start
+  (for example, if the executable specified cannot be found).
+
 # v0.14 (2019-12-23)
 
 - Add --auto-start to immediately start the command

@@ -53,7 +53,7 @@ func (m *ProcessManager) launch(proc *Process) *exec.Cmd {
 
 	err := cmd.Start()
 	if err != nil {
-		logger.Printf("start error: %s", err)
+		logger.Printf("error starting %s: %s", proc.argv, err)
 		return nil
 	}
 
@@ -101,16 +101,21 @@ func (m *ProcessManager) Manage() {
 			proc := req.process
 			if proc.cmd == nil {
 				proc.cmd = m.launch(proc)
-				proc.started = time.Now()
-				if proc.waitAfterStart > 0 {
-					proc.waitUntil = proc.started.Add(proc.waitAfterStart)
+				if proc.cmd == nil {
+					req.ready <- false
+					continue
+				} else {
+					proc.started = time.Now()
+					if proc.waitAfterStart > 0 {
+						proc.waitUntil = proc.started.Add(proc.waitAfterStart)
+					}
+					m.procs[proc.cmd.Process.Pid] = proc
 				}
-				m.procs[proc.cmd.Process.Pid] = proc
 			}
 			if proc.waitAfterStart > 0 && proc.waitUntil.After(time.Now()) {
-				time.AfterFunc(proc.waitUntil.Sub(time.Now()), func() { close(req.ready) })
+				time.AfterFunc(proc.waitUntil.Sub(time.Now()), func() { req.ready <- true })
 			} else {
-				close(req.ready)
+				req.ready <- true
 			}
 
 		case proc := <-m.stopper:
