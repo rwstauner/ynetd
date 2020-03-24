@@ -1,8 +1,10 @@
 [![Build Status](https://travis-ci.org/rwstauner/ynetd.svg?branch=master)](https://travis-ci.org/rwstauner/ynetd)
 
+![micromanager](/micromanager.png)
+
 # ynetd
 
-A tiny super server written in go.
+Micromanage your microservices with a tiny super server written in go.
 
     ynetd -proxy ":8080 localhost:8081" cmd arg...
 
