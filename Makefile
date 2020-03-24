@@ -38,6 +38,7 @@ build_one: ytester
 
 build_all: deps
 	gox $(BUILD_ARGS) -output "build/ynetd-{{.OS}}-{{.Arch}}/ynetd" -verbose
+	rm -f build/*.zip
 	(cd build && for i in ynetd-*/; do (cd "$$i" && zip "../$${i%/}.zip" ynetd*) && rm -rf "$$i"; done)
 
 build_release: build_all sign_builds
