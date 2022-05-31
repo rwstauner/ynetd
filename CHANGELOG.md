@@ -1,3 +1,7 @@
+# v0.16 Unreleased
+- Update dependencies
+- Update go to `1.17`
+
 # v0.15 Unreleased
 
 - Close connection immediately and print warning if command fails to start
